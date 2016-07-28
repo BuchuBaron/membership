@@ -1,7 +1,6 @@
-; $Id$
-name = RS and Drupal User Sync
-description = "Import user auths from RS to drupal and vice versa"
+name = BMW MC Cape Membership Admin
+description = "Manage BMW Motorrad Club Cape Membership from start to finish."
 core = 6.x
-dependencies[] = rscommon
-package = "Rocketseed Suite"
-version = "6.x-3.329"
+dependencies[] = 
+package = "HoneyBadger"
+version = "6.x-0.1"
