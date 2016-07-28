@@ -1,0 +1,7 @@
+; $Id$
+name = RS and Drupal User Sync
+description = "Import user auths from RS to drupal and vice versa"
+core = 6.x
+dependencies[] = rscommon
+package = "Rocketseed Suite"
+version = "6.x-3.329"
