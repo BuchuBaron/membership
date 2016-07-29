@@ -1,0 +1,61 @@
+<?php
+/**
+ * @file
+ * Initialize the membership table and run updates.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function membership_install() {
+  drupal_install_schema('membership');
+}
+
+/**
+ * Implements hook_schema().
+ */
+function membership_schema() {
+  $schema['membership'] = array(
+    'description' => 'The club membership table.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The member number (whether active or not).',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'card_serial' => array(
+        'description' => 'The card identifier.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ),
+      'status' => array(
+        'description' => 'The membership status of this person.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => 'applied',
+      ),
+      'title' => array(
+        'description' => 'The title of this node, always treated a non-markup plain text.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'indexes' => array(
+      'node_changed'        => array('changed'),
+      'node_created'        => array('created'),
+    ),
+    'unique keys' => array(
+      'nid_vid' => array('nid', 'vid'),
+      'vid'     => array('vid'),
+    ),
+    'primary key' => array('nid'),
+  );
+  return $schema;
+}
+
+// vim: set et sw=2 ft=php ai:
