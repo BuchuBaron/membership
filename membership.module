@@ -32,15 +32,25 @@ function membership_perm() {
  * Implements hook_menu().
  */
 function membership_menu() {
-  $items = array();
-  $items['membership/new'] = array(
-    'title' => 'Join BMW Motorrad Club Cape',
-    'description' => 'Create a new member record',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('membership_edit_form'),
-    'access arguments' => array('create membership'),
-    'file' => 'membership.inc',
-    'type' => MENU_CALLBACK,
+  $items = array(
+    'membership/new' => array(
+      'title' => 'Join BMW Motorrad Club Cape',
+      'description' => 'Create a new member record',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('membership_edit_form'),
+      'access arguments' => array('create membership'),
+      'file' => 'membership.inc',
+      'type' => MENU_CALLBACK,
+    ),
+    'membership/edit/%' => array(
+      'title' => 'Join BMW Motorrad Club Cape',
+      'description' => 'Create a new member record',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('membership_edit_form', 2),
+      'access arguments' => array('edit own membership'),
+      'file' => 'membership.inc',
+      'type' => MENU_CALLBACK,
+    ),
   );
   return $items;
 }

@@ -7,13 +7,22 @@
 /**
  * Implements hook_form().
  */
-function membership_edit_form(&$form_state, $id = 0) {
+function membership_edit_form(&$form_state = NULL, $id = 0) {
+  global $user;
+
   if ($id > 0) {
     $result = db_query("SELECT * FROM {membership} WHERE id = %d", $id);
-    $record = db_fetchObject($result);
+    $record = db_fetch_object($result);
   }
   else {
     $record = new stdClass();
+  }
+
+  if (!user_access('administer membership')) {
+    // User editing their own record: the uid must match.
+    if ($record->uid > 0 && $record->uid != $user->uid) {
+      drupal_goto(access_denied());
+    }
   }
 
   $form = array(
@@ -89,14 +98,14 @@ function membership_edit_form(&$form_state, $id = 0) {
       '#default_value' => $record->email,
       '#required' => TRUE,
     ),
-    'home_address' => array(
+    'address_home' => array(
       '#type' => 'textarea',
       '#title' => t('Home Address'),
       '#size' => 4,
       '#default_value' => $record->address_home,
       '#required' => TRUE,
     ),
-    'postal_address' => array(
+    'address_postal' => array(
       '#type' => 'textarea',
       '#title' => t('Postal Address'),
       '#size' => 4,
@@ -113,9 +122,9 @@ function membership_edit_form(&$form_state, $id = 0) {
       '#default_value' => $record->card_collection,
       '#options' => array(
         'post' => t('Post to my postal address.'),
-        'collect' => t('Collect at club meeting.'),
-        'donford_stellenbosch' => t('Collect from Donford Stellenbosch'),
-        'donford_cape_town' => t('Collect from Donford Cape Town'),
+        'collect_meeting' => t('Collect at club meeting.'),
+        'collect_stellenbosch' => t('Collect from Donford Stellenbosch'),
+        'collect_cape_town' => t('Collect from Donford Cape Town'),
       ),
     ),
     'ice_name' => array(
@@ -190,7 +199,7 @@ function membership_edit_form_submit($form, &$form_state) {
     }
     else {
       // Sync the uid based on email addrss if we can look it up.
-      $uid = db_result(db_query("SELECT uid FROM {user} WHERE mail like '%s'", $values['email']));
+      $uid = db_result(db_query("SELECT uid FROM {users} WHERE mail like '%s'", $values['email']));
       if ($uid > 0) {
         $uid = $uid;
       }
@@ -269,7 +278,10 @@ EOS;
       $values['card_collection'], $values['ice_name'], $values['ice_number'],
       $values['medaid_name'], $values['medaid_member_number'], $values['medaid_contact_number']
     );
-    $new_id = db_result(db_query("LAST_INSERT_ID()"));
+
+    $new_id = db_result(db_query("SELECT LAST_INSERT_ID()"));
+    drupal_goto('membership/edit/' . $new_id);
+
     if ($new_id > 0) {
       drupal_set_message(t(
         "Member with id=@id and uid=@uid successfully created.",
