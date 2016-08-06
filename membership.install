@@ -24,12 +24,6 @@ function membership_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      'card_serial' => array(
-        'description' => 'The card identifier.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => FALSE,
-      ),
       'status' => array(
         'description' => 'The membership status of this person.',
         'type' => 'varchar',
@@ -46,7 +40,8 @@ function membership_schema() {
       ),
       'created' => array(
         'description' => 'The date registered.',
-        'mysql_type' => 'timestamp default now()',
+        // Workaround for mysql's fucked up timestamp restrictions.
+        'mysql_type' => "timestamp default '0000-00-00 00:00:00'",
         'not null' => TRUE,
       ),
       'edited' => array(
@@ -136,16 +131,12 @@ function membership_schema() {
         'length' => 20,
         'default' => NULL,
       ),
-
     ),
     'indexes' => array(
-      'email'        => array('email'),
-      'uid'        => array('uid'),
+      'email' => array('email'),
+      'uid' => array('uid'),
     ),
-    'unique keys' => array(
-      'id'     => array('id'),
-    ),
-    'primary key' => array('nid'),
+    'primary key' => array('id'),
   );
   return $schema;
 }

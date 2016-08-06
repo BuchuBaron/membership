@@ -7,7 +7,7 @@
 /**
  * Implements hook_form().
  */
-function membership_edit_form(&$form_state, $id) {
+function membership_edit_form(&$form_state, $id = 0) {
   if ($id > 0) {
     $result = db_query("SELECT * FROM {membership} WHERE id = %d", $id);
     $record = db_fetchObject($result);
@@ -32,11 +32,6 @@ function membership_edit_form(&$form_state, $id) {
         '#type' => 'textfield',
         '#title' => t('Member Number'),
         '#default_value' => $record->id,
-      ),
-      'card_serial' => array(
-        '#type' => 'textfield',
-        '#title' => t('Card Serial'),
-        '#default_value' => $record->card_serial,
       ),
       'status' => array(
         '#type' => 'select',
@@ -201,12 +196,10 @@ function membership_edit_form_submit(&$form_state) {
   if (user_access('administer membership')) {
     $admin = $form_state['values']['Admin'];
     $admin_update_str = <<< EOS
-      card_serial = %d,
       status = '%s',
       paid = %d,
 EOS;
     $admin_update_vals = array(
-      $admin['card_serial'],
       $admin['status'],
       $admin['paid'],
     );
