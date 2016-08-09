@@ -221,6 +221,7 @@ EOS;
     );
   }
 
+  rsdebug("224: values=", $values);
   if ($values['id'] > 0) {
     db_query("UPDATE membership SET
       $admin_update_str
@@ -256,6 +257,7 @@ EOS;
       $values['medaid_member_number'],
       $admin['member_number']
     );
+    rsdebug("259: got db_error=" . db_error());
   }
   else {
     db_query("INSERT INTO membership
