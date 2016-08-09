@@ -210,54 +210,58 @@ function membership_edit_form_submit($form, &$form_state) {
   $admin_update_vals = array();
 
   if (user_access('administer membership')) {
-    $admin = $form_state['values']['Admin'];
-    $admin_update_str = <<< EOS
+    $update_str = <<< EOS
       status = '%s',
       paid = %d,
 EOS;
-    $admin_update_vals = array(
+    $update_vals = array(
       $admin['status'],
       $admin['paid'],
     );
   }
 
-  rsdebug("224: values=", $values);
+  // Now complete the rest of the update string and array.
+  $update_str .= <<< EOS
+    uid = %d,
+    firstname = '%s',
+    surname = '%s',
+    gender = '%s',
+    email = '%s',
+    address_home = '%s',
+    address_postal = '%s',
+    cell = '%s',
+    card_collection = '%s',
+    ice_name = '%s',
+    ice_number = '%s',
+    medaid_name = '%s',
+    medaid_member_number = '%s',
+    medaid_contact_number = '%s'
+EOS;
+  $update_vals = array_merge($update_vals, array(
+    $uid,
+    $values['firstname'],
+    $values['surname'],
+    $values['gender'],
+    $values['email'],
+    $values['address_home'],
+    $values['address_postal'],
+    $values['cell'],
+    $values['card_collection'],
+    $values['ice_name'],
+    $values['ice_number'],
+    $values['medaid_name'],
+    $values['medaid_member_number'],
+    $values['medaid_contact_number'],
+    $values['id'],
+  ));
+
   if ($values['id'] > 0) {
     db_query("UPDATE membership SET
-      $admin_update_str
       edited = now(),
-      uid = %d,
-      firstname = '%s',
-      surname = '%s',
-      gender = '%s',
-      email = '%s',
-      address_home = '%s',
-      address_postal = '%s',
-      cell = '%s',
-      card_collection = '%s',
-      ice_name = '%s',
-      ice_number = '%s',
-      medaid_name = '%s',
-      medaid_member_number = '%s',
-      medaid_contact_number = '%s'
+      $update_str
       WHERE id = %d",
-      $admin_update_vals,
-      $uid,
-      $values['firstname'],
-      $values['surname'],
-      $values['gender'],
-      $values['email'],
-      $values['home_address'],
-      $values['postal_address'],
-      $values['cell'],
-      $values['card_collection'],
-      $values['ice_name'],
-      $values['ice_number'],
-      $values['medaid_name'],
-      $values['medaid_member_number'],
-      $admin['member_number']
+      $update_vals
     );
-    rsdebug("259: got db_error=" . db_error());
   }
   else {
     db_query("INSERT INTO membership
