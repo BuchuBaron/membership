@@ -33,6 +33,15 @@ function membership_perm() {
  */
 function membership_menu() {
   $items = array(
+    'membership/list' => array(
+      'title' => 'BMW Motorrad Club Cape Members',
+      'description' => 'List the member records',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('membership_list_form'),
+      'access arguments' => array('administer membership'),
+      'file' => 'membership-list.inc',
+      'type' => MENU_CALLBACK,
+    ),
     'membership/new' => array(
       'title' => 'Join BMW Motorrad Club Cape',
       'description' => 'Create a new member record',
@@ -62,6 +71,10 @@ function membership_theme() {
   return array(
     'theme_membership_edit_form' => array(
       'template' => 'membership-edit-form',
+      'arguments' => array('form' => NULL),
+    ),
+    'theme_membership_list_form' => array(
+      'template' => 'membership-list-form',
       'arguments' => array('form' => NULL),
     ),
   );
