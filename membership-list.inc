@@ -11,7 +11,6 @@ function membership_list_form(&$form_state = NULL) {
   // Use a wide theme here to accomodate the wide table.
   global $custom_theme;
   $custom_theme = 'garland';
-  rs_debug("11: _GET=", $_GET);
 
   $filter = array(
     'member_number' => $_GET['member_number'],
@@ -27,7 +26,7 @@ function membership_list_form(&$form_state = NULL) {
         '#title' => t("Filter"),
         '#description' => t("Membership List Filter"),
         '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
+        '#collapsed' => TRUE,
 
         'member_number' => array(
           '#type' => 'textfield',
@@ -103,71 +102,101 @@ function membership_list_form(&$form_state = NULL) {
  * Produce an HTML sortable table of all the members.
  */
 function membership_list($filter) {
-  rs_debug("106: In function membership_list(filter=", $filter);
   $header = array(
     array(
-      'data' => t('Member Number'),
+      'data' => t('Member'),
       'field' => 'id',
+      'valign' => 'bottom',
     ),
     array(
       'data' => t('Status'),
       'field' => 'status',
+      'valign' => 'bottom',
+      'class' => 'status',
     ),
     array(
       'data' => t('Paid'),
       'field' => 'paid',
-    ),
-    array(
-      'data' => t('First Name'),
-      'field' => 'firstname',
-    ),
-    array(
-      'data' => t('Surname'),
-      'field' => 'surname',
-    ),
-    array(
-      'data' => t('Gender'),
-      'field' => 'gender',
-    ),
-    array(
-      'data' => t('Email'),
-      'field' => 'email',
+      'valign' => 'bottom',
+      'class' => 'status',
     ),
     array(
       'data' => t('Card Collection'),
       'field' => 'card_collection',
+      'valign' => 'bottom',
+      'class' => 'status',
     ),
     array(
-      'data' => t('Home Address'),
-      'field' => 'address_home',
+      'data' => t('First Name'),
+      'field' => 'firstname',
+      'valign' => 'bottom',
+      'class' => 'identity',
     ),
     array(
-      'data' => t('Postal Address'),
-      'field' => 'address_postal',
+      'data' => t('Surname'),
+      'field' => 'surname',
+      'valign' => 'bottom',
+      'class' => 'identity',
+    ),
+    array(
+      'data' => t('Gender'),
+      'field' => 'gender',
+      'valign' => 'bottom',
+      'class' => 'identity',
     ),
     array(
       'data' => t('Cell'),
       'field' => 'cell',
+      'valign' => 'bottom',
+      'class' => 'contact',
+    ),
+    array(
+      'data' => t('Email'),
+      'field' => 'email',
+      'valign' => 'bottom',
+      'class' => 'contact',
+    ),
+    array(
+      'data' => t('Home Address'),
+      'field' => 'address_home',
+      'valign' => 'bottom',
+      'class' => 'contact',
+    ),
+    array(
+      'data' => t('Postal Address'),
+      'field' => 'address_postal',
+      'valign' => 'bottom',
+      'class' => 'contact',
     ),
     array(
       'data' => t('ICE Name'),
       'field' => 'ice_name',
+      'valign' => 'bottom',
+      'class' => 'emergency',
     ),
     array(
       'data' => t('ICE Number'),
       'field' => 'ice_number',
+      'valign' => 'bottom',
+      'class' => 'emergency',
     ),
     array(
       'data' => t('Med Aid Number'),
       'field' => 'medaid_number',
+      'valign' => 'bottom',
+      'class' => 'emergency',
     ),
     array(
       'data' => t('Med Aid Member Number'),
       'field' => 'medaid_member_number',
+      'valign' => 'bottom',
+      'class' => 'emergency',
     ),
     array(
       'data' => t('Med Aid Contact Number'),
       'field' => 'medaid_contact_number',
+      'valign' => 'bottom',
+      'class' => 'emergency',
     ),
   );
 
@@ -175,14 +204,68 @@ function membership_list($filter) {
 
   $rows = array();
   while ($record = db_fetch_object($result)) {
-    $row = array();
+    $row = array(
+      array(
+        'data' => '<input type="checkbox" class="selection" value="' .
+        check_plain($record->id) . '" />' . check_plain($record->id),
+        'nowrap' => 'nowrap',
+        'style' => 'white-space: nowrap',
+      ),
+    );
+
     foreach ($header as $column) {
-      $row[] = $record->$column['field'];
+      if ($column['field'] == 'id') {
+        // Already done.
+        continue;
+      }
+      $row[] = array(
+        'data' => check_plain($record->$column['field']),
+        'class' => $column['class'],
+      );
     }
     $rows[] = $row;
   }
 
-  return theme_table($header, $rows);
+  // The first row will be the "select all" and action on selection row.
+  $action = array(
+    array(
+      'data' => '<input type="checkbox" id="select-all" value="all" />' . t("<b>Select All</b>"),
+      'nowrap' => 'nowrap',
+      'style' => 'white-space: nowrap;width: 0',
+    ),
+    array(
+      'data' => '<select id="action" /><option value="action">' . t('Action') . '</option>' .
+      '<option value="export">' . t('export') . '</option>' .
+      '<option value="paid">' . t('paid') . '</option>' . '<option value="unpaid">' . t('upaid') . '</option>' .
+      '<option value="active">' . t('activate') . '</option>' .
+      '<option value="rejected">' . t('reject') . '</option>' .
+      '<option value="expired">' . t('expire') . '</option></select>',
+      'nowrap' => 'nowrap',
+      'style' => 'white-space: nowrap',
+      'align' => 'left',
+      'style' => 'white-space: nowrap;width: 0',
+    ),
+    array(
+      'data' => '<input type="button" id="run-action" value="' . t('Run') . '" />',
+      'align' => 'left',
+      'style' => 'white-space: nowrap;width: 0',
+    ),
+    array(
+      'data' => t("<b>Show:</b>"),
+      'align' => 'right',
+      'style' => 'padding-left: 3em',
+    ),
+  );
+
+  foreach (array(t('status'), t('identity'), t('contact'), t('emergency')) as $class) {
+    $action[] = array(
+      'data' => "<input type=\"checkbox\" id=\"$class\" name=\"$class\" value=\"$class\" />" . $class,
+      'nowrap' => 'nowrap',
+      'style' => 'white-space: nowrap;width: 0',
+    );
+  }
+
+  return theme_table(NULL, array($action), array('style' => 'width: 0')) . '<br />' . theme_table($header, $rows);
 }
 
 /**
