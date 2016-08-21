@@ -102,6 +102,7 @@ function membership_list_form(&$form_state = NULL) {
  * Produce an HTML sortable table of all the members.
  */
 function membership_list($filter) {
+  drupal_add_js(drupal_get_path('module', 'membership') . '/membership-admin.js');
   $header = array(
     array(
       'data' => t('Member'),
