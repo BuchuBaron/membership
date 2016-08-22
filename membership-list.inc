@@ -12,9 +12,19 @@ function membership_list_form(&$form_state = NULL) {
   global $custom_theme;
   $custom_theme = 'garland';
 
+  rs_debug("15: form_state[values]=", $form_state['values']);
+  rs_debug("16: _GET=", $_GET);
   $filter = array(
-    'member_number' => $_GET['member_number'],
+    'member_number' => (!empty($form_state['values']['member_number'])) ? $form_state['values']['member_number'] : $_GET['member_number'],
+    'status' => (!empty($form_state['values']['status'])) ? $form_state['values']['status'] : $_GET['status'],
+    'paid' => (!empty($form_state['values']['paid'])) ? $form_state['values']['paid'] : $_GET['paid'],
+    'firstname' => (!empty($form_state['values']['firstname'])) ? $form_state['values']['firstname'] : $_GET['firstname'],
+    'surname' => (!empty($form_state['values']['surname'])) ? $form_state['values']['surname'] : $_GET['surname'],
+    'gender' => (!empty($form_state['values']['gender'])) ? $form_state['values']['gender'] : $_GET['gender'],
+    'email' => (!empty($form_state['values']['email'])) ? $form_state['values']['email'] : $_GET['email'],
+    'card_collection' => (!empty($form_state['values']['card_collection'])) ? $form_state['values']['card_collection'] : $_GET['card_collection'],
   );
+  rs_debug("25: filter=", $filter);
 
   if (user_access('administer membership')) {
     return array(
@@ -41,10 +51,10 @@ function membership_list_form(&$form_state = NULL) {
             expired = not paid for this period, rejected = denied or expelled'
           ),
           '#options' => array(
-            'applied',
-            'active',
-            'expired',
-            'rejected',
+            'applied' => t('applied'),
+            'active' => t('active'),
+            'expired' => t('expired'),
+            'rejected' => t('rejected'),
           ),
         ),
         'paid' => array(
@@ -76,7 +86,7 @@ function membership_list_form(&$form_state = NULL) {
           '#title' => t('Email'),
         ),
         'card_collection' => array(
-          '#type' => 'select',
+          '#type' => 'checkboxes',
           '#title' => t('Card Collection'),
           '#options' => array(
             'post' => t('Postal address.'),
@@ -201,7 +211,21 @@ function membership_list($filter) {
     ),
   );
 
-  $result = pager_query("SELECT * FROM {membership} " . tablesort_sql($header));
+  $filterArray = array();
+  foreach ($filter as $key => $value) {
+    if (!empty($value)) {
+      $filterArray[] = "$key like '%$value%'";
+    }
+  }
+  if (!empty($filterArray)) {
+    $filterStr = " WHERE " . implode(', and ', $filterArray);
+  }
+  else {
+    $filterStr = '';
+  }
+
+  rs_debug("224: filterStr=$filterStr");
+  $result = pager_query("SELECT * FROM {membership} $filterStr" . tablesort_sql($header));
 
   $rows = array();
   while ($record = db_fetch_object($result)) {

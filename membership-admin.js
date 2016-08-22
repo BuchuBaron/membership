@@ -51,6 +51,7 @@ Drupal.behaviors.membership_admin = function(context) {
       }
       else {
         alert("Ran " + command + " on " + selected_members.join(','));
+      }
     });
   });
-};
+}
