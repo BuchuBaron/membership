@@ -12,19 +12,45 @@ function membership_list_form(&$form_state = NULL) {
   global $custom_theme;
   $custom_theme = 'garland';
 
-  rs_debug("15: form_state[values]=", $form_state['values']);
-  rs_debug("16: _GET=", $_GET);
-  $filter = array(
-    'member_number' => (!empty($form_state['values']['member_number'])) ? $form_state['values']['member_number'] : $_GET['member_number'],
-    'status' => (!empty($form_state['values']['status'])) ? $form_state['values']['status'] : $_GET['status'],
-    'paid' => (!empty($form_state['values']['paid'])) ? $form_state['values']['paid'] : $_GET['paid'],
-    'firstname' => (!empty($form_state['values']['firstname'])) ? $form_state['values']['firstname'] : $_GET['firstname'],
-    'surname' => (!empty($form_state['values']['surname'])) ? $form_state['values']['surname'] : $_GET['surname'],
-    'gender' => (!empty($form_state['values']['gender'])) ? $form_state['values']['gender'] : $_GET['gender'],
-    'email' => (!empty($form_state['values']['email'])) ? $form_state['values']['email'] : $_GET['email'],
-    'card_collection' => (!empty($form_state['values']['card_collection'])) ? $form_state['values']['card_collection'] : $_GET['card_collection'],
-  );
-  rs_debug("25: filter=", $filter);
+  $filter = array();
+  foreach (array(
+    'member_number',
+    'status',
+    'paid',
+    'firstname',
+    'surname',
+    'gender',
+    'email',
+    'card_collection',
+  ) as $key) {
+    if (!empty($_GET[$key])) {
+      if (in_array($key, array('status', 'gender', 'card_collection'))) {
+        // These are multi-value arrays that are comma-separated. Reconstitute
+        // them.
+        $filter[$key] = explode(',', $_GET[$key]);
+      }
+      elseif ($key == 'paid') {
+        // An array which should have 0 and 1 for unpaid and paid text values.
+        $paidArray = explode(',', $_GET['paid']);
+        $options = array();
+        if (!empty($paidArray)) {
+          foreach ($paidArray as $paidValue) {
+            if ($paidValue == 'unpaid') {
+              $options[] = 0;
+            }
+            elseif ($paidValue == 'paid') {
+              $options[] = 1;
+            }
+          }
+          $filter[$key] = $options;
+        }
+      }
+      else {
+        // Just a straight text value.
+        $filter[$key] = $_GET[$key];
+      }
+    }
+  }
 
   if (user_access('administer membership')) {
     return array(
@@ -213,18 +239,21 @@ function membership_list($filter) {
 
   $filterArray = array();
   foreach ($filter as $key => $value) {
-    if (!empty($value)) {
+    if (is_array($value)) {
+      $delimited_values = "'" . implode("', '", $value) . "'";
+      $filterArray[] = "$key in ($delimited_values)";
+    }
+    elseif (!empty($value)) {
       $filterArray[] = "$key like '%$value%'";
     }
   }
   if (!empty($filterArray)) {
-    $filterStr = " WHERE " . implode(', and ', $filterArray);
+    $filterStr = " WHERE " . implode(' and ', $filterArray);
   }
   else {
     $filterStr = '';
   }
 
-  rs_debug("224: filterStr=$filterStr");
   $result = pager_query("SELECT * FROM {membership} $filterStr" . tablesort_sql($header));
 
   $rows = array();
@@ -299,19 +328,23 @@ function membership_list($filter) {
  * If the filter button was pressed, call the form with filter parameters.
  */
 function membership_list_form_submit($form, &$form_state) {
-  rs_debug("194: form_state[values]=", $form_state['values']);
   $query_pair_array = array();
   foreach ($form_state['values']['Filter'] as $key => $value) {
+    if ($key == 'submit') {
+      continue;
+    }
     if (is_array($value)) {
       $subarray = array();
       foreach ($value as $k => $v) {
-        if ($v > 0) {
+        if ($v != '0') {
           $subarray[] = $k;
         }
       }
-      $query_pair_array[] = "$key=" . implode(',', $subarray);
+      if (!empty($subarray)) {
+        $query_pair_array[] = "$key=" . implode(',', $subarray);
+      }
     }
-    else {
+    elseif (!empty(trim($value))) {
       $query_pair_array[] = "$key=$value";
     }
   }
