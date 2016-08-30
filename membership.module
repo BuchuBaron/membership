@@ -52,12 +52,23 @@ function membership_menu() {
       'type' => MENU_CALLBACK,
     ),
     'membership/edit/%' => array(
-      'title' => 'Join BMW Motorrad Club Cape',
-      'description' => 'Create a new member record',
+      'title' => 'Edit BMW Motorrad Club Cape Membership Info',
+      'description' => 'Edit a member record',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('membership_edit_form', 2),
+      // Member number.
       'access arguments' => array('edit own membership'),
       'file' => 'membership.inc',
+      'type' => MENU_CALLBACK,
+    ),
+    'membership/update/%' => array(
+      'title' => 'Bulk Edit BMW Motorrad Club Cape Members',
+      'description' => 'Bulk update member records from selection',
+      'page callback' => 'membership_update',
+      'page arguments' => array(2),
+      // Action.
+      'access arguments' => array('administer membership'),
+      'file' => 'membership-admin.inc',
       'type' => MENU_CALLBACK,
     ),
   );

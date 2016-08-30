@@ -32,6 +32,8 @@ Drupal.behaviors.membership_admin = function(context) {
     }
   });
 
+  // Disable the 'Run' command if there is no action chosen.
+  // Disable the 'Action' dropdown if there is no selection.
   // Set up the actions on selected records.
   $('#run-action', context).click(function() {
     var command = $('#action').val();
@@ -42,16 +44,12 @@ Drupal.behaviors.membership_admin = function(context) {
     alert("Running " + command + " on selection of " + selected_members.join(','));
     var post_data = {
       // filter: filter,
-      selected_members: selected_members
+      selected_members: selected_members.join(',')
     };
 
     $.post('/membership/update/' + command, post_data, function(result) {
-      if (result === 'no landingpages') {
-        alert('Really?!');
-      }
-      else {
-        alert("Ran " + command + " on " + selected_members.join(','));
-      }
+      eval("output=" + result);
+      alert("Ran " + command + " to get " + output.result + " with " + output.data.selected_members);
     });
   });
 }
