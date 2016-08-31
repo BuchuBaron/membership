@@ -23,6 +23,7 @@ Drupal.behaviors.membership_admin = function(context) {
     else {
       $('.selection').removeAttr('checked');
     }
+    checkActionDropdownState();
   });
 
   // Set up unselect all when one checkbox is unselected.
@@ -30,10 +31,12 @@ Drupal.behaviors.membership_admin = function(context) {
     if (!$(this).attr('checked')) {
       $('#select-all').removeAttr('checked');
     }
+    checkActionDropdownState();
   });
 
-  // Disable the 'Run' command if there is no action chosen.
   // Disable the 'Action' dropdown if there is no selection.
+  checkActionDropdownState();
+
   // Set up the actions on selected records.
   $('#run-action', context).click(function() {
     var command = $('#action').val();
@@ -52,4 +55,23 @@ Drupal.behaviors.membership_admin = function(context) {
       alert("Ran " + command + " to get " + output.result + " with " + output.data.selected_members);
     });
   });
+}
+
+function checkActionDropdownState() {
+  $('#action').attr('title', Drupal.t('Select the records you want to modify by checking their checkboxes.'));
+  $('#action').attr('disabled', true);
+
+  $('.selection').each(function() {
+    if ($(this).attr('checked')) {
+      $('#action').attr('disabled', false);
+    }
+  });
+
+  $('#action:enabled').attr('title', Drupal.t('Choose your action then click the Run button.'));
+  if ($('#action:enabled').size()) {
+    $('#run-action').attr('disabled', false).attr('title', Drupal.t('Click here to run the chosen action against all the checked records below.'));
+  }
+  else {
+    $('#run-action').attr('disabled', true).attr('title', Drupal.t('Choose an action to run first.'));
+  }
 }
