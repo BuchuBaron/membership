@@ -275,6 +275,7 @@ function membership_list($filter) {
       $row[] = array(
         'data' => check_plain($record->$column['field']),
         'class' => $column['class'],
+        'id' => $column['field'] . '-' . check_plain($record->id),
       );
     }
     $rows[] = $row;
@@ -290,7 +291,7 @@ function membership_list($filter) {
     array(
       'data' => '<select id="action" /><option value="action">' . t('Action') . '</option>' .
       '<option value="export">' . t('export') . '</option>' .
-      '<option value="paid">' . t('paid') . '</option>' . '<option value="unpaid">' . t('upaid') . '</option>' .
+      '<option value="paid">' . t('paid') . '</option>' . '<option value="unpaid">' . t('unpaid') . '</option>' .
       '<option value="active">' . t('activate') . '</option>' .
       '<option value="rejected">' . t('reject') . '</option>' .
       '<option value="expired">' . t('expire') . '</option></select>',

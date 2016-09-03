@@ -138,6 +138,38 @@ function membership_schema() {
     ),
     'primary key' => array('id'),
   );
+  $schema['membership_auditlog'] = array(
+    'description' => 'An audit log of bulk changes to the club membership table, so that catastrophic mass mistakes can be reversed.',
+    'fields' => array(
+      'uid' => array(
+        'description' => 'The drupal uid of the person making the change.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'timestamp' => array(
+        'description' => 'The time of the change.',
+        'mysql_type' => "timestamp default now()",
+        'not null' => TRUE,
+      ),
+      'attribute' => array(
+        'description' => 'The column that was changed in bulk.',
+        'type' => 'varchar',
+        'length' => 10,
+      ),
+      'newvalue' => array(
+        'description' => 'The new value to set the column to.',
+        'type' => 'varchar',
+        'length' => 10,
+      ),
+      'oldvalues' => array(
+        'description' => 'A json_encoded array of member ids and old value of the column.',
+        'type' => 'text',
+      ),
+    ),
+    'primary key' => array('uid', 'timestamp', 'attribute'),
+  );
   return $schema;
 }
 

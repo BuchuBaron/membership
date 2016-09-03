@@ -52,8 +52,31 @@ Drupal.behaviors.membership_admin = function(context) {
 
     $.post('/membership/update/' + command, post_data, function(result) {
       eval("output=" + result);
-      alert("Ran " + command + " to get " + output.result + " with " + output.data.selected_members);
+      if (output.result) {
+        // Update the changed records in situ, or refresh the page.
+        $(output.data).each(function(idx, val) {
+          if (command == 'paid') {
+            $('TD#paid-' + val).html(1);
+          }
+          else if (command == 'unpaid') {
+            $('TD#paid-' + val).html(0);
+          }
+        });
+      }
+      else {
+        alert("Ran " + command + " to get " + output.result + " with " + output.data.selected_members);
+      }
     });
+  });
+
+  // Activate the run button when a valid action has been chosen
+  $('#action', context).change(function() {
+    if ($(this).val() == 'action') {
+      $('#run-action').attr('disabled', true).attr('title', Drupal.t('Choose an action to run first.'));
+    }
+    else {
+      $('#run-action').attr('disabled', false).attr('title', Drupal.t('Click here to run the chosen action against all the checked records below.'));
+    }
   });
 }
 
@@ -68,7 +91,7 @@ function checkActionDropdownState() {
   });
 
   $('#action:enabled').attr('title', Drupal.t('Choose your action then click the Run button.'));
-  if ($('#action:enabled').size()) {
+  if ($('#action:enabled').size() && $('#action').val() != 'action') {
     $('#run-action').attr('disabled', false).attr('title', Drupal.t('Click here to run the chosen action against all the checked records below.'));
   }
   else {
