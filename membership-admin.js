@@ -9,7 +9,6 @@ Drupal.behaviors.membership_admin = function(context) {
         $('.' + value).hide();
       }
     });
-    $('.status').hide();
     $('.emergency').hide();
     $('#contact').attr('checked', 'checked');
     $('#identity').attr('checked', 'checked');
@@ -44,7 +43,6 @@ Drupal.behaviors.membership_admin = function(context) {
     var selected_members = $.map($('.selection:checked', context), function(element) {
       return element.value;
     });
-    alert("Running " + command + " on selection of " + selected_members.join(','));
     var post_data = {
       // filter: filter,
       selected_members: selected_members.join(',')
@@ -61,10 +59,31 @@ Drupal.behaviors.membership_admin = function(context) {
           else if (command == 'unpaid') {
             $('TD#paid-' + val).html(0);
           }
+          else if (command == 'active') {
+            $('TD#status-' + val).html('active');
+          }
+          else if (command == 'rejected') {
+            $('TD#status-' + val).html('rejected');
+          }
+          else if (command == 'expired') {
+            $('TD#status-' + val).html('expired');
+          }
+          else if (command == 'export') {
+            // Output.data.val is the path of the download csv
+            if (val.path) {
+              $('iframe#dliframe').attr('src', '/membership/download?path=' + val.path);
+            }
+            else if (val.error) {
+              alert(val.error);
+            }
+            else {
+              alert('Something went wrong');
+            }
+          }
         });
       }
       else {
-        alert("Ran " + command + " to get " + output.result + " with " + output.data.selected_members);
+        alert("Failed " + command + " to get " + output.result + " with " + output.data.selected_members);
       }
     });
   });

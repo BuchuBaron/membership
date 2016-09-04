@@ -61,6 +61,22 @@ function membership_menu() {
       'file' => 'membership.inc',
       'type' => MENU_CALLBACK,
     ),
+    'membership/update/export' => array(
+      'title' => 'Export Selected Motorrad Club Cape Members',
+      'description' => 'Export to CSV the members that have been selected.',
+      'page callback' => 'membership_export',
+      'access arguments' => array('administer membership'),
+      'file' => 'membership-admin.inc',
+      'type' => MENU_CALLBACK,
+    ),
+    'membership/download' => array(
+      'title' => 'Download CSV',
+      'description' => 'Download the Export to CSV Created by the list screen.',
+      'page callback' => 'membership_download',
+      'access arguments' => array('administer membership'),
+      'file' => 'membership-admin.inc',
+      'type' => MENU_CALLBACK,
+    ),
     'membership/update/%' => array(
       'title' => 'Bulk Edit BMW Motorrad Club Cape Members',
       'description' => 'Bulk update member records from selection',
