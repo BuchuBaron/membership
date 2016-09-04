@@ -19,9 +19,10 @@ function membership_list_form(&$form_state = NULL) {
     'paid',
     'firstname',
     'surname',
-    'gender',
     'email',
     'card_collection',
+    'gender',
+    'bike',
   ) as $key) {
     if (!empty($_GET[$key])) {
       if (in_array($key, array('status', 'gender', 'card_collection'))) {
@@ -121,6 +122,10 @@ function membership_list_form(&$form_state = NULL) {
             'collect_cape_town' => t('Cape Town'),
           ),
         ),
+        'bike' => array(
+          '#type' => 'textfield',
+          '#title' => t('Bike'),
+        ),
         'submit' => array(
           '#type' => 'submit',
           '#value' => t('Filter'),
@@ -182,6 +187,12 @@ function membership_list($filter) {
     array(
       'data' => t('Gender'),
       'field' => 'gender',
+      'valign' => 'bottom',
+      'class' => 'identity',
+    ),
+    array(
+      'data' => t('Bike'),
+      'field' => 'bike',
       'valign' => 'bottom',
       'class' => 'identity',
     ),
