@@ -87,6 +87,12 @@ function membership_menu() {
       'file' => 'membership-admin.inc',
       'type' => MENU_CALLBACK,
     ),
+    'membership/setuids' => array(
+      'title' => 'Populate UIDs from users table.',
+      'page callback' => 'membership_uids',
+      'file' => 'membership-admin.inc',
+      'type' => MENU_CALLBACK,
+    ),
   );
   return $items;
 }
@@ -105,6 +111,39 @@ function membership_theme() {
       'arguments' => array('form' => NULL),
     ),
   );
+}
+
+/**
+ * Implements hook_user();
+ *
+ * $edit contains changes, $account contains existing values.
+ */
+function membership_user($op, &$edit, &$account, $category) {
+  if ($op == 'update' or $op == 'insert') {
+    $uid = $account->uid;
+    $oldemail = $account->mail;
+    $newemail = $edit['mail'];
+    rs_debug("118: In function membership_user: $op, oldemail=$oldemail, newemail=$newemail, uid=$uid");
+  }
+  if ($op == 'insert') {
+    // New user, see if they have a membership record.
+    $id = db_result(db_query("SELECT id FROM {membership} WHERE LOWER(email) = '%s'", strtolower(trim($newemail))));
+    if ($id > 0) {
+      db_query("UPDATE {membership} SET uid=%d WHERE id=%d", $uid, $id);
+    }
+  }
+  elseif ($op == 'update' && strolower($newemail) != strtolower($oldemail)) {
+    // If we have a membership record with UID it takes precedence.
+    $id = db_result(db_query("SELECT id FROM {membership} WHERE uid = %d", $uid));
+    if ($id > 0) {
+      db_query("UPDATE {membership} SET email='%s' WHERE id=%d", strtolower(trim($newemail)), $id);
+    }
+    else {
+      // No uid, let's find a membership record by email
+      db_query("UPDATE {membership} SET uid = %d, email = '%s' WHERE uid IS NULL AND LOWER(email) = '%s'", $uid, $newemail, $oldemail);
+      db_query("UPDATE {membership} SET uid = %d WHERE uid IS NULL AND LOWER(email) = '%s'", $uid, $newemail);
+    }
+  }
 }
 
 // vim: set et ft=php sw=2 ai:

@@ -9,10 +9,12 @@ Drupal.behaviors.membership_admin = function(context) {
         $('.' + value).hide();
       }
     });
-    $('.emergency').hide();
-    $('#contact').attr('checked', 'checked');
-    $('#identity').attr('checked', 'checked');
   });
+
+  $('.emergency').hide();
+  $('#status').attr('checked', 'checked');
+  $('#contact').attr('checked', 'checked');
+  $('#identity').attr('checked', 'checked');
 
   // Set up select-all
   $('#select-all', context).click(function() {

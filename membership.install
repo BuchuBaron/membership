@@ -73,6 +73,11 @@ function membership_schema() {
         'type' => 'varchar',
         'length' => 6,
       ),
+      'bike' => array(
+        'description' => 'Bike model.',
+        'type' => 'varchar',
+        'length' => 30,
+      ),
       'email' => array(
         'description' => 'Email.',
         'type' => 'varchar',

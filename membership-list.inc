@@ -125,10 +125,6 @@ function membership_list_form(&$form_state = NULL) {
           '#type' => 'submit',
           '#value' => t('Filter'),
         ),
-        'export' => array(
-          '#type' => 'submit',
-          '#value' => t('Export'),
-        ),
       ),
       'table' => array(
         '#type' => 'markup',
@@ -338,53 +334,6 @@ function membership_list($filter) {
  */
 function membership_list_form_submit($form, &$form_state) {
   $query_pair_array = array();
-  if ($form_state['clicked_button']['#value'] == t('Export')) {
-    $headerArray = array(
-      'id',
-      'status',
-      'paid',
-      'created',
-      'edited',
-      'uid',
-      'firstname',
-      'surname',
-      'gender',
-      'email',
-      'address_home',
-      'address_postal',
-      'cell',
-      'card_collection',
-      'ice_name',
-      'ice_number',
-      'medaid_name',
-      'medaid_member_number',
-      'medaid_contact_number',
-    );
-    $result = db_query("SELECT * FROM {membership}");
-    $rows = array();
-    $rows[] = '"' . implode('","', $headerArray) . '"';
-    while ($record = db_fetch_object($result)) {
-      $row = array();
-      foreach ($headerArray as $column) {
-        $row[] = $record->$column;
-      }
-      $rows[] = '"' . implode('","', $row) . '"';
-    }
-
-    $content = implode("\n", $rows);
-
-    // Serve file download.
-    // Most of this is only necessary because of IE.
-    // drupal_set_header('Pragma', 'public');
-    // drupal_set_header('Expires', '0');
-    // drupal_set_header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
-    drupal_set_header('Content-Type: text/csv; charset=utf-8');
-    drupal_set_header('Content-Disposition: attachment; filename="BMWmembers.csv"');
-//    drupal_set_header('Content-Transfer-Encoding', 'binary');
-    print $content;
-    module_invoke_all('exit');
-    exit();
-  }
   foreach ($form_state['values']['Filter'] as $key => $value) {
     if ($key == 'submit') {
       continue;
