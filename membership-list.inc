@@ -56,12 +56,11 @@ function membership_list_form(&$form_state = NULL) {
   if (user_access('administer membership')) {
     return array(
       '#tree' => TRUE,
-      '#theme' => 'theme_membership_list_form',
 
       'Filter' => array(
         '#type' => 'fieldset',
-        '#title' => t("Filter"),
-        '#description' => t("Membership List Filter"),
+        '#title' => t("Membership List Filter"),
+        '#theme' => 'theme_membership_list_form',
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
 

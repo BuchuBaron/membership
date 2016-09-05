@@ -22,19 +22,22 @@ label.option {
 div.description {
   clear: left;
 }
+tbody {
+  border: none;
+}
 </style>
 <table style="border:none"><tr>
 <td>
 <?php
-print drupal_render($form['Filter']['member_number']);
-print drupal_render($form['Filter']['firstname']);
-print drupal_render($form['Filter']['surname']);
-print drupal_render($form['Filter']['email']);
-print drupal_render($form['Filter']['bike']);
-print "\n</td><td>\n";
-print drupal_render($form['Filter']['status']);
-print drupal_render($form['Filter']['paid']);
-print drupal_render($form['Filter']['gender']);
-print drupal_render($form['Filter']['card_collection']);
+print drupal_render($form['member_number']);
+print drupal_render($form['firstname']);
+print drupal_render($form['surname']);
+print drupal_render($form['email']);
+print drupal_render($form['bike']);
+print "\n</td><td>&nbsp;</td><td>\n";
+print drupal_render($form['status']);
+print drupal_render($form['paid']);
+print drupal_render($form['gender']);
+print drupal_render($form['card_collection']);
 print "\n</td></tr></table>";
 print drupal_render($form);
