@@ -90,7 +90,7 @@ function membership_menu() {
     'membership/setuids' => array(
       'title' => 'Populate UIDs from users table.',
       'page callback' => 'membership_uids',
-      'access arguments' => array('populate uids'),
+      'access arguments' => array('administer site configuration'),
       'file' => 'membership-admin.inc',
       'type' => MENU_CALLBACK,
     ),

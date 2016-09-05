@@ -9,6 +9,14 @@
  */
 function membership_edit_form(&$form_state = NULL, $id = 0) {
   global $user;
+  rs_debug("12: in function membership_edit_form(form_state = NULL, $id = 0) with user=", $user);
+
+  // Check for existing membership record.  And confirm this
+  // user may edit this record.
+  if ($id == 0) {
+    $id = db_result(db_query("SELECT id FROM {membership} WHERE uid=%d", $user->uid));
+  }
+  rs_debug("19: got  id=$id");
 
   if ($id > 0) {
     $result = db_query("SELECT * FROM {membership} WHERE id = %d", $id);
@@ -21,7 +29,7 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
   if (!user_access('administer membership')) {
     // User editing their own record: the uid must match.
     if ($record->uid > 0 && $record->uid != $user->uid) {
-      drupal_goto(access_denied());
+      drupal_goto(drupal_access_denied());
     }
   }
 
@@ -33,7 +41,8 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
   if (user_access('administer membership')) {
     $form['Admin'] = array(
       '#type' => 'fieldset',
-      '#description' => t("Membership Administration"),
+      '#title' => t("Membership Administration"),
+      '#description' => t("For office use only."),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
 
@@ -82,6 +91,23 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
       '#default_value' => $record->surname,
       '#required' => TRUE,
     ),
+    'email' => array(
+      '#type' => 'textfield',
+      '#title' => t('Email'),
+      '#default_value' => $record->email,
+      '#required' => TRUE,
+    ),
+    'cell' => array(
+      '#type' => 'textfield',
+      '#title' => t('Cell'),
+      '#default_value' => $record->cell,
+    ),
+    'bike' => array(
+      '#type' => 'textfield',
+      '#title' => t('Bike'),
+      '#description' => t('What bike do you ride?'),
+      '#default_value' => $record->bike,
+    ),
     'gender' => array(
       '#type' => 'radios',
       '#title' => t('Gender'),
@@ -92,11 +118,16 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
       ),
       '#required' => TRUE,
     ),
-    'email' => array(
-      '#type' => 'textfield',
-      '#title' => t('Email'),
-      '#default_value' => $record->email,
-      '#required' => TRUE,
+    'card_collection' => array(
+      '#type' => 'select',
+      '#title' => t('Card Collection'),
+      '#default_value' => $record->card_collection,
+      '#options' => array(
+        'post' => t('Post to my postal address.'),
+        'collect_meeting' => t('Collect at club meeting.'),
+        'collect_stellenbosch' => t('Collect from Donford Stellenbosch'),
+        'collect_cape_town' => t('Collect from Donford Cape Town'),
+      ),
     ),
     'address_home' => array(
       '#type' => 'textarea',
@@ -110,22 +141,6 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
       '#title' => t('Postal Address'),
       '#size' => 4,
       '#default_value' => (empty($record->address_postal)) ? t('As Above.') : $record->address_postal,
-    ),
-    'cell' => array(
-      '#type' => 'textfield',
-      '#title' => t('Cell'),
-      '#default_value' => $record->cell,
-    ),
-    'card_collection' => array(
-      '#type' => 'select',
-      '#title' => t('Card Collection'),
-      '#default_value' => $record->card_collection,
-      '#options' => array(
-        'post' => t('Post to my postal address.'),
-        'collect_meeting' => t('Collect at club meeting.'),
-        'collect_stellenbosch' => t('Collect from Donford Stellenbosch'),
-        'collect_cape_town' => t('Collect from Donford Cape Town'),
-      ),
     ),
     'ice_name' => array(
       '#type' => 'textfield',
@@ -166,7 +181,7 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save'),
+    '#value' => t('Join'),
   );
 
   return $form;
@@ -225,12 +240,13 @@ EOS;
     uid = %d,
     firstname = '%s',
     surname = '%s',
-    gender = '%s',
     email = '%s',
+    cell = '%s',
+    bike = '%s',
+    gender = '%s',
+    card_collection = '%s',
     address_home = '%s',
     address_postal = '%s',
-    cell = '%s',
-    card_collection = '%s',
     ice_name = '%s',
     ice_number = '%s',
     medaid_name = '%s',
@@ -241,12 +257,13 @@ EOS;
     $uid,
     $values['firstname'],
     $values['surname'],
-    $values['gender'],
     $values['email'],
+    $values['cell'],
+    $values['bike'],
+    $values['gender'],
+    $values['card_collection'],
     $values['address_home'],
     $values['address_postal'],
-    $values['cell'],
-    $values['card_collection'],
     $values['ice_name'],
     $values['ice_number'],
     $values['medaid_name'],
@@ -267,20 +284,20 @@ EOS;
     db_query("INSERT INTO membership
       (created, status, paid, uid,
       firstname, surname, gender, email,
-      address_home, address_postal, cell,
+      address_home, address_postal, cell, bike,
       card_collection, ice_name, ice_number,
       medaid_name, medaid_member_number, medaid_contact_number)
       VALUES
       (now(), '%s', %d, %d,
       '%s', '%s', '%s', '%s',
-      '%s', '%s', '%s',
+      '%s', '%s', '%s', '%s',
       '%s', '%s', '%s',
       '%s', '%s', '%s')",
       (!empty($admin['status'])) ? $admin['status'] : 'applied',
       $admin['paid'],
       $uid,
       $values['firstname'], $values['surname'], $values['gender'], $values['email'],
-      $values['address_home'], $values['address_postal'], $values['cell'],
+      $values['address_home'], $values['address_postal'], $values['cell'], $values['bike'],
       $values['card_collection'], $values['ice_name'], $values['ice_number'],
       $values['medaid_name'], $values['medaid_member_number'], $values['medaid_contact_number']
     );
