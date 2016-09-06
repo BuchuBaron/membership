@@ -170,11 +170,9 @@ function membership_download() {
  * Set UID fields in the membership table by matching emails.
  */
 function membership_uids() {
-  $result = db_query("SELECT id, LOWER(email) FROM {membership} WHERE uid IS NULL");
+  $result = db_query("SELECT id, LOWER(email) AS email FROM {membership} WHERE uid IS NULL");
   while ($member = db_fetch_object($result)) {
-    rs_debug("175: member=", $member);
     $uid = db_result(db_query("SELECT uid FROM {users} WHERE lower(mail) = '%s'", trim($member->email)));
-    rs_debug("177: uid=$uid");
     if ($uid > 0) {
       db_query("UPDATE {membership} SET uid=%d WHERE id = %d", $uid, $member->id);
     }
