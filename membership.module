@@ -115,7 +115,7 @@ function membership_theme() {
 }
 
 /**
- * Implements hook_user();
+ * Implements hook_user().
  *
  * $edit contains changes, $account contains existing values.
  */
@@ -133,14 +133,14 @@ function membership_user($op, &$edit, &$account, $category) {
       db_query("UPDATE {membership} SET uid=%d WHERE id=%d", $uid, $id);
     }
   }
-  elseif ($op == 'update' && strolower($newemail) != strtolower($oldemail)) {
+  elseif ($op == 'update' && strtolower($newemail) != strtolower($oldemail)) {
     // If we have a membership record with UID it takes precedence.
     $id = db_result(db_query("SELECT id FROM {membership} WHERE uid = %d", $uid));
     if ($id > 0) {
       db_query("UPDATE {membership} SET email='%s' WHERE id=%d", strtolower(trim($newemail)), $id);
     }
     else {
-      // No uid, let's find a membership record by email
+      // No uid, let's find a membership record by email.
       db_query("UPDATE {membership} SET uid = %d, email = '%s' WHERE uid IS NULL AND LOWER(email) = '%s'", $uid, $newemail, $oldemail);
       db_query("UPDATE {membership} SET uid = %d WHERE uid IS NULL AND LOWER(email) = '%s'", $uid, $newemail);
     }

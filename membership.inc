@@ -29,6 +29,7 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
   if (!user_access('administer membership')) {
     // User editing their own record: the uid must match.
     if ($record->uid > 0 && $record->uid != $user->uid) {
+      rs_debug("32 denying access with record=", $record, "and user=", $user);
       drupal_goto(drupal_access_denied());
     }
   }
@@ -183,6 +184,9 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
     '#type' => 'submit',
     '#value' => t('Join'),
   );
+  if ($record->id > 0) {
+    $form['submit']['#value'] = t('Save');
+  }
 
   return $form;
 }
@@ -303,7 +307,13 @@ EOS;
     );
 
     $new_id = db_result(db_query("SELECT LAST_INSERT_ID()"));
-    drupal_goto('membership/edit/' . $new_id);
+    if ($user->uid > 0) {
+      // Logged in, so allowed to access the edit form.
+      drupal_goto('membership/edit/' . $new_id);
+    }
+    else {
+      drupal_goto('join-bmwmcc-club-cape');
+    }
 
     if ($new_id > 0) {
       drupal_set_message(t(
