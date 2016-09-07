@@ -9,7 +9,6 @@
  */
 function membership_edit_form(&$form_state = NULL, $id = 0) {
   global $user;
-  rs_debug("12: in function membership_edit_form(form_state = NULL, $id = 0) with user=", $user);
 
   // Check for existing membership record.  And confirm this
   // user may edit this record.
@@ -178,6 +177,10 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
       '#default_value' => $record->medaid_contact_number,
       '#required' => TRUE,
     ),
+    'uid' => array(
+      '#type' => 'value',
+      '#value' => $record->uid,
+    ),
   );
 
   $form['submit'] = array(
@@ -217,11 +220,16 @@ function membership_edit_form_submit($form, &$form_state) {
       $uid = $user->uid;
     }
     else {
-      // Sync the uid based on email addrss if we can look it up.
+      // Sync the uid based on email address if we can look it up.
       $uid = db_result(db_query("SELECT uid FROM {users} WHERE mail like '%s'", $values['email']));
       if ($uid > 0) {
         $uid = $uid;
       }
+    }
+
+    if ($values['uid'] > 0) {
+      // Make sure a change in email address updates the drupal user email also.
+      db_query("UPDATE {users} SET mail='%s' WHERE  uid=%d", $form_state['values']['email'], $form_state['values']['uid']);
     }
   }
 
