@@ -15,7 +15,6 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
   if ($id == 0) {
     $id = db_result(db_query("SELECT id FROM {membership} WHERE uid=%d", $user->uid));
   }
-  rs_debug("19: got  id=$id");
 
   if ($id > 0) {
     $result = db_query("SELECT * FROM {membership} WHERE id = %d", $id);
@@ -284,7 +283,43 @@ EOS;
     $values['id'],
   ));
 
-  if ($values['id'] > 0) {
+  // If NOT id>0, create the lowest id higher than 50 and use that.
+  if (!($values['id'] > 0)) {
+    db_query("INSERT INTO membership
+      (id,
+      created, status, paid, uid,
+      firstname, surname, gender, email,
+      address_home, address_postal, cell, bike,
+      card_collection, ice_name, ice_number,
+      medaid_name, medaid_member_number, medaid_contact_number)
+      SELECT min(m1.id + 1),
+      now(), '%s', %d, %d,
+      '%s', '%s', '%s', '%s',
+      '%s', '%s', '%s', '%s',
+      '%s', '%s', '%s',
+      '%s', '%s', '%s'
+      FROM {membership} m1
+      LEFT JOIN {membership} m2 ON m1.id + 1 = m2.id
+      WHERE m2.id IS NULL AND m1.id > 50
+      LIMIT 1"
+    );
+    $new_id = db_result(db_query("SELECT LAST_INSERT_ID()"));
+    drupal_set_message(t(
+      "Member with id=@id and uid=@uid successfully created.",
+      array(
+        '@id' => $new_id,
+        '@uid' => $uid,
+      )
+    ));
+    if ($user->uid > 0) {
+      // Logged in, so allowed to access the edit form.
+      $form_state['redirect'] = 'membership/edit/' . $new_id;
+    }
+    else {
+      $form_state['redirect'] = 'join-bmwmcc-club-cape';
+    }
+  }
+  elseif ($values['id'] > 0) {
     db_query("UPDATE membership SET
       edited = now(),
       $update_str
@@ -292,6 +327,7 @@ EOS;
       $update_vals
     );
   }
+  /*
   else {
     db_query("INSERT INTO membership
       (created, status, paid, uid,
@@ -333,6 +369,7 @@ EOS;
       ));
     }
   }
+   */
 }
 
 // vim: set et ft=php sw=2 ai:

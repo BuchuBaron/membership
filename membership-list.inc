@@ -268,14 +268,23 @@ function membership_list($filter) {
     $filterStr = '';
   }
 
-  $result = pager_query("SELECT * FROM {membership} $filterStr" . tablesort_sql($header));
+  $result = pager_query(
+    "SELECT * FROM {membership} $filterStr" . tablesort_sql($header),
+    50
+  );
 
   $rows = array();
   while ($record = db_fetch_object($result)) {
     $row = array(
       array(
         'data' => '<input type="checkbox" class="selection" value="' .
-        check_plain($record->id) . '" />' . check_plain($record->id),
+        check_plain($record->id) . '" />' . l(
+          $record->id,
+          '/membership/edit/' . check_plain($record->id),
+          array(
+            'query' => drupal_get_destination(),
+          )
+        ),
         'nowrap' => 'nowrap',
         'style' => 'white-space: nowrap',
       ),
@@ -334,7 +343,9 @@ function membership_list($filter) {
     );
   }
 
-  return theme_table(NULL, array($action), array('style' => 'width: 0')) . '<br />' . theme_table($header, $rows);
+  return theme_table(NULL, array($action), array('style' => 'width: 0')) . '<br />' .
+    theme_table($header, $rows) .
+    theme_pager(NULL, 50);
 }
 
 /**
