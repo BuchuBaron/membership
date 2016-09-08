@@ -301,16 +301,30 @@ EOS;
       FROM {membership} m1
       LEFT JOIN {membership} m2 ON m1.id + 1 = m2.id
       WHERE m2.id IS NULL AND m1.id > 50
-      LIMIT 1"
+      LIMIT 1",
+      (!empty($admin['status'])) ? $admin['status'] : 'applied',
+      $admin['paid'],
+      $uid,
+      $values['firstname'], $values['surname'], $values['gender'], $values['email'],
+      $values['address_home'], $values['address_postal'], $values['cell'], $values['bike'],
+      $values['card_collection'], $values['ice_name'], $values['ice_number'],
+      $values['medaid_name'], $values['medaid_member_number'], $values['medaid_contact_number']
     );
     $new_id = db_result(db_query("SELECT LAST_INSERT_ID()"));
-    drupal_set_message(t(
-      "Member with id=@id and uid=@uid successfully created.",
-      array(
-        '@id' => $new_id,
-        '@uid' => $uid,
-      )
-    ));
+    if ($new_id > 0) {
+      drupal_set_message(t(
+        "Member with id=@id and uid=@uid successfully created.",
+        array(
+          '@id' => $new_id,
+          '@uid' => $uid,
+        )
+      ));
+    }
+    else {
+      drupal_set_message(t(
+        "Failure to create a new member record. Please contact the webmaster."
+      ));
+    }
     if ($user->uid > 0) {
       // Logged in, so allowed to access the edit form.
       $form_state['redirect'] = 'membership/edit/' . $new_id;
