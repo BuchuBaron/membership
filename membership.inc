@@ -232,8 +232,9 @@ function membership_edit_form_submit($form, &$form_state) {
     }
   }
 
-  $admin_update_str = '';
-  $admin_update_vals = array();
+  $update_str = '';
+  $update_vals = array();
+  $admin['status'] = (!empty($admin['status'])) ? $admin['status'] : 'applied';
 
   if (user_access('administer membership')) {
     $update_str = <<< EOS
@@ -284,7 +285,11 @@ EOS;
   ));
 
   // If NOT id>0, create the lowest id higher than 50 and use that.
-  if (!($values['id'] > 0)) {
+  rs_debug("288: values[id]=", $values['id']);
+  rs_debug("289: ctype_digit(" . $values['id'] . ")=" . ctype_digit($values['id']));
+  rs_debug("290: values[id]>0 = " . ($values['id']>0));
+  if (!(ctype_digit($values['id']) && $values['id'] > 0)) {
+    rs_debug("291: inserting");
     db_query("INSERT INTO membership
       (id,
       created, status, paid, uid,
@@ -302,7 +307,7 @@ EOS;
       LEFT JOIN {membership} m2 ON m1.id + 1 = m2.id
       WHERE m2.id IS NULL AND m1.id > 50
       LIMIT 1",
-      (!empty($admin['status'])) ? $admin['status'] : 'applied',
+      $admin['status'],
       $admin['paid'],
       $uid,
       $values['firstname'], $values['surname'], $values['gender'], $values['email'],
@@ -311,18 +316,19 @@ EOS;
       $values['medaid_name'], $values['medaid_member_number'], $values['medaid_contact_number']
     );
     $new_id = db_result(db_query("SELECT LAST_INSERT_ID()"));
-    if ($new_id > 0) {
+    rs_debug("319: got new_id=$new_id");
+    if (db_error()) {
+      drupal_set_message(t(
+        "Failure to create a new member record. Please contact the webmaster."
+      ));
+    }
+    else {
       drupal_set_message(t(
         "Member with id=@id and uid=@uid successfully created.",
         array(
           '@id' => $new_id,
           '@uid' => $uid,
         )
-      ));
-    }
-    else {
-      drupal_set_message(t(
-        "Failure to create a new member record. Please contact the webmaster."
       ));
     }
     if ($user->uid > 0) {
@@ -333,7 +339,8 @@ EOS;
       $form_state['redirect'] = 'join-bmwmcc-club-cape';
     }
   }
-  elseif ($values['id'] > 0) {
+  else {
+    rs_debug("340: updating");
     db_query("UPDATE membership SET
       edited = now(),
       $update_str
