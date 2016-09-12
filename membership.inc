@@ -12,8 +12,13 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
 
   // Check for existing membership record.  And confirm this
   // user may edit this record.
+  // First try by uid in the membership table.
   if ($id == 0) {
-    $id = db_result(db_query("SELECT id FROM {membership} WHERE uid=%d", $user->uid));
+    $id = db_result(db_query("SELECT MIN(id) FROM {membership} WHERE uid=%d", $user->uid));
+  }
+  // Try again, by email address.
+  if ($id == 0) {
+    $id = db_result(db_query("SELECT MIN(id) FROM {membership} WHERE email = '%s' AND (uid IS NULL OR uid = 0)", $user->mail));
   }
 
   if ($id > 0) {
@@ -213,7 +218,8 @@ function membership_edit_form_submit($form, &$form_state) {
   $values = $form_state['values']['Record'];
   $admin = $form_state['values']['Admin'];
 
-  if (valid_email_address($values['email'])) {
+  rs_debug("221: admin=", $admin, "values=", $values);
+  if (valid_email_address($values['email']) && !($values['uid'] > 0)) {
     if ($user->mail == $values['email']) {
       // User editing their own account, synchronize uids.
       $uid = $user->uid;
@@ -221,15 +227,16 @@ function membership_edit_form_submit($form, &$form_state) {
     else {
       // Sync the uid based on email address if we can look it up.
       $uid = db_result(db_query("SELECT uid FROM {users} WHERE mail like '%s'", $values['email']));
-      if ($uid > 0) {
-        $uid = $uid;
-      }
     }
-
-    if ($values['uid'] > 0) {
-      // Make sure a change in email address updates the drupal user email also.
-      db_query("UPDATE {users} SET mail='%s' WHERE  uid=%d", $form_state['values']['email'], $form_state['values']['uid']);
-    }
+  }
+  else {
+    $uid = $values['uid'];
+  }
+  rs_debug("234: uid=$uid, values[uid]=" . $values['uid']);
+  if ($values['uid'] > 0) {
+    // Make sure a change in email address updates the drupal user email also.
+    db_query("UPDATE {users} SET mail='%s' WHERE  uid=%d", $values['email'], $values['uid']);
+    rs_debug("239: run update users with email=".$values['email']." and uid=".$values['uid']);
   }
 
   $update_str = '';
@@ -287,36 +294,39 @@ EOS;
   // If NOT id>0, create the lowest id higher than 50 and use that.
   rs_debug("288: values[id]=", $values['id']);
   rs_debug("289: ctype_digit(" . $values['id'] . ")=" . ctype_digit($values['id']));
-  rs_debug("290: values[id]>0 = " . ($values['id']>0));
+  rs_debug("290: values[id] > 0 = " . ($values['id'] > 0));
   if (!(ctype_digit($values['id']) && $values['id'] > 0)) {
     rs_debug("291: inserting");
-    db_query("INSERT INTO membership
-      (id,
-      created, status, paid, uid,
-      firstname, surname, gender, email,
-      address_home, address_postal, cell, bike,
-      card_collection, ice_name, ice_number,
-      medaid_name, medaid_member_number, medaid_contact_number)
-      SELECT min(m1.id + 1),
-      now(), '%s', %d, %d,
-      '%s', '%s', '%s', '%s',
-      '%s', '%s', '%s', '%s',
-      '%s', '%s', '%s',
-      '%s', '%s', '%s'
-      FROM {membership} m1
-      LEFT JOIN {membership} m2 ON m1.id + 1 = m2.id
-      WHERE m2.id IS NULL AND m1.id > 50
-      LIMIT 1",
-      $admin['status'],
-      $admin['paid'],
-      $uid,
-      $values['firstname'], $values['surname'], $values['gender'], $values['email'],
-      $values['address_home'], $values['address_postal'], $values['cell'], $values['bike'],
-      $values['card_collection'], $values['ice_name'], $values['ice_number'],
-      $values['medaid_name'], $values['medaid_member_number'], $values['medaid_contact_number']
-    );
-    $new_id = db_result(db_query("SELECT LAST_INSERT_ID()"));
-    rs_debug("319: got new_id=$new_id");
+    // Keep trying until you are no longer beaten to it by another insert.
+    $count = 0;
+    do {
+      $count += 1;
+      $new_id = db_result(db_query(
+        "SELECT min(m1.id + 1)
+        FROM {membership} m1
+        LEFT JOIN {membership} m2 ON m1.id + 1 = m2.id
+        WHERE m2.id IS NULL AND m1.id > 50
+        LIMIT 1"
+      ));
+      db_query("INSERT INTO membership
+        (id,
+        created, status, paid, uid,
+        firstname, surname, gender, email,
+        address_home, address_postal, cell, bike,
+        card_collection, ice_name, ice_number,
+        medaid_name, medaid_member_number, medaid_contact_number)
+        VALUES (%d, now(), '%s', %d, %d,
+        '%s', '%s', '%s', '%s',
+        '%s', '%s', '%s', '%s',
+        '%s', '%s', '%s',
+        '%s', '%s', '%s')",
+        $new_id, $admin['status'], $admin['paid'], $uid,
+        $values['firstname'], $values['surname'], $values['gender'], $values['email'],
+        $values['address_home'], $values['address_postal'], $values['cell'], $values['bike'],
+        $values['card_collection'], $values['ice_name'], $values['ice_number'],
+        $values['medaid_name'], $values['medaid_member_number'], $values['medaid_contact_number']
+      );
+    } while (db_error() && $count < 10);
     if (db_error()) {
       drupal_set_message(t(
         "Failure to create a new member record. Please contact the webmaster."
@@ -347,50 +357,21 @@ EOS;
       WHERE id = %d",
       $update_vals
     );
-  }
-  /*
-  else {
-    db_query("INSERT INTO membership
-      (created, status, paid, uid,
-      firstname, surname, gender, email,
-      address_home, address_postal, cell, bike,
-      card_collection, ice_name, ice_number,
-      medaid_name, medaid_member_number, medaid_contact_number)
-      VALUES
-      (now(), '%s', %d, %d,
-      '%s', '%s', '%s', '%s',
-      '%s', '%s', '%s', '%s',
-      '%s', '%s', '%s',
-      '%s', '%s', '%s')",
-      (!empty($admin['status'])) ? $admin['status'] : 'applied',
-      $admin['paid'],
-      $uid,
-      $values['firstname'], $values['surname'], $values['gender'], $values['email'],
-      $values['address_home'], $values['address_postal'], $values['cell'], $values['bike'],
-      $values['card_collection'], $values['ice_name'], $values['ice_number'],
-      $values['medaid_name'], $values['medaid_member_number'], $values['medaid_contact_number']
-    );
-
-    $new_id = db_result(db_query("SELECT LAST_INSERT_ID()"));
-    if ($user->uid > 0) {
-      // Logged in, so allowed to access the edit form.
-      drupal_goto('membership/edit/' . $new_id);
+    if (db_error()) {
+      drupal_set_message(t(
+        "Failure to update member record. Please contact the webmaster."
+      ));
     }
     else {
-      drupal_goto('join-bmwmcc-club-cape');
-    }
-
-    if ($new_id > 0) {
       drupal_set_message(t(
-        "Member with id=@id and uid=@uid successfully created.",
+        "Member with id=@id and uid=@uid updated.",
         array(
-          '@id' => $new_id,
+          '@id' => $values['id'],
           '@uid' => $uid,
         )
       ));
     }
   }
-   */
 }
 
 // vim: set et ft=php sw=2 ai:

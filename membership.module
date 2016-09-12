@@ -133,8 +133,7 @@ function membership_user($op, &$edit, &$account, $category) {
     }
     else {
       // No uid, let's find a membership record by email.
-      db_query("UPDATE {membership} SET uid = %d, email = '%s' WHERE uid IS NULL AND LOWER(email) = '%s'", $uid, $newemail, $oldemail);
-      db_query("UPDATE {membership} SET uid = %d WHERE uid IS NULL AND LOWER(email) = '%s'", $uid, $newemail);
+      db_query("UPDATE {membership} SET uid = %d, email = '%s' WHERE (uid IS NULL OR uid=0) AND LOWER(email) = '%s'", $uid, $newemail, $oldemail);
     }
   }
 }
