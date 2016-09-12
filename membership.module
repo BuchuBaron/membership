@@ -116,7 +116,6 @@ function membership_user($op, &$edit, &$account, $category) {
     $uid = $account->uid;
     $oldemail = $account->mail;
     $newemail = $edit['mail'];
-    rs_debug("118: In function membership_user: $op, oldemail=$oldemail, newemail=$newemail, uid=$uid");
   }
   if ($op == 'insert') {
     // New user, see if they have a membership record.

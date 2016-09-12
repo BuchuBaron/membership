@@ -32,7 +32,6 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
   if (!user_access('administer membership')) {
     // User editing their own record: the uid must match.
     if ($record->uid > 0 && $record->uid != $user->uid) {
-      rs_debug("32 denying access with record=", $record, "and user=", $user);
       drupal_goto(drupal_access_denied());
     }
   }
@@ -218,7 +217,6 @@ function membership_edit_form_submit($form, &$form_state) {
   $values = $form_state['values']['Record'];
   $admin = $form_state['values']['Admin'];
 
-  rs_debug("221: admin=", $admin, "values=", $values);
   if (valid_email_address($values['email']) && !($values['uid'] > 0)) {
     if ($user->mail == $values['email']) {
       // User editing their own account, synchronize uids.
@@ -232,11 +230,9 @@ function membership_edit_form_submit($form, &$form_state) {
   else {
     $uid = $values['uid'];
   }
-  rs_debug("234: uid=$uid, values[uid]=" . $values['uid']);
   if ($values['uid'] > 0) {
     // Make sure a change in email address updates the drupal user email also.
     db_query("UPDATE {users} SET mail='%s' WHERE  uid=%d", $values['email'], $values['uid']);
-    rs_debug("239: run update users with email=".$values['email']." and uid=".$values['uid']);
   }
 
   $update_str = '';
@@ -292,11 +288,7 @@ EOS;
   ));
 
   // If NOT id>0, create the lowest id higher than 50 and use that.
-  rs_debug("288: values[id]=", $values['id']);
-  rs_debug("289: ctype_digit(" . $values['id'] . ")=" . ctype_digit($values['id']));
-  rs_debug("290: values[id] > 0 = " . ($values['id'] > 0));
   if (!(ctype_digit($values['id']) && $values['id'] > 0)) {
-    rs_debug("291: inserting");
     // Keep trying until you are no longer beaten to it by another insert.
     $count = 0;
     do {
@@ -350,7 +342,6 @@ EOS;
     }
   }
   else {
-    rs_debug("340: updating");
     db_query("UPDATE membership SET
       edited = now(),
       $update_str
