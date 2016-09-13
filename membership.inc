@@ -365,4 +365,61 @@ EOS;
   }
 }
 
+/**
+ * Check membership status for vendors providing discount.
+ *
+ * The check requires the member number and first and last names to
+ * prevent identity fishing with random numbers.
+ */
+function membership_status_form(&$form_state = NULL) {
+  return array(
+    '#theme' => 'theme_membership_status_form',
+    'number' => array(
+      '#type' => 'textfield',
+      '#title' => t('Member Number'),
+      '#description' => t('The Club Membership Number as printed on the ard.'),
+      '#required' => TRUE,
+    ),
+    'name' => array(
+      '#type' => 'textfield',
+      '#title' => t('First Name'),
+      '#description' => t('The first name of the member as on the club records.'),
+      '#required' => TRUE,
+    ),
+    'surname' => array(
+      '#type' => 'textfield',
+      '#title' => t('SurName'),
+      '#description' => t('The surname of the member as on the club records.'),
+      '#required' => TRUE,
+    ),
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Check'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_submit().
+ */
+function membership_status_form_submit($form, &$form_state) {
+  $values = $form_state['status'];
+  if (strlen($values['name']) > 1 && strlen($values['surname']) > 2 && ctype_digit($values['number'])) {
+    // Do the lookup.
+    $status = db_result(db_query(
+      "SELECT status FROM {membership}
+      WHERE id = %d
+        AND firstname like '%' || '%s' || '%'
+        AND surname like '%' || '%s' || '%'",
+      $values['number'],
+      $values['name'],
+      $values['surname']
+    ));
+    drupal_set_message("Got status of $status");
+  }
+  else {
+    drupal_set_message("Come on, give me a bit more than that to work with.");
+  }
+}
+
 // vim: set et ft=php sw=2 ai:

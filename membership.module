@@ -24,6 +24,7 @@ function membership_perm() {
   return array(
     'create membership',
     'edit own membership',
+    'view membership status',
     'administer membership',
   );
 }
@@ -84,6 +85,15 @@ function membership_menu() {
       'page callback' => 'membership_uids',
       'access arguments' => array('administer site configuration'),
       'file' => 'membership-admin.inc',
+      'type' => MENU_CALLBACK,
+    ),
+    'membership/status' => array(
+      'title' => 'BMW Motorrad Club Cape Member Status.',
+      'description' => 'Confirm whether a person is an active member.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('membership_status_form'),
+      'access arguments' => array('view membership status'),
+      'file' => 'membership.inc',
       'type' => MENU_CALLBACK,
     ),
   );
