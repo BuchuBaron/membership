@@ -52,6 +52,7 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
       'member_number' => array(
         '#type' => 'textfield',
         '#title' => t('Member Number'),
+        '#size' => 3,
         '#default_value' => $record->id,
       ),
       'status' => array(
@@ -85,36 +86,41 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
     'firstname' => array(
       '#type' => 'textfield',
       '#title' => t('First Name'),
-      '#default_value' => $record->firstname,
+      '#size' => 20,
+      '#default_value' => check_plain($record->firstname),
       '#required' => TRUE,
     ),
     'surname' => array(
       '#type' => 'textfield',
       '#title' => t('Surname'),
-      '#default_value' => $record->surname,
+      '#size' => 20,
+      '#default_value' => check_plain($record->surname),
       '#required' => TRUE,
     ),
     'email' => array(
       '#type' => 'textfield',
       '#title' => t('Email'),
+      '#size' => 20,
       '#default_value' => $record->email,
       '#required' => TRUE,
     ),
     'cell' => array(
       '#type' => 'textfield',
       '#title' => t('Cell'),
-      '#default_value' => $record->cell,
+      '#size' => 20,
+      '#default_value' => check_plain($record->cell),
     ),
     'bike' => array(
       '#type' => 'textfield',
       '#title' => t('Bike'),
+      '#size' => 20,
       '#description' => t('What bike do you ride?'),
-      '#default_value' => $record->bike,
+      '#default_value' => check_plain($record->bike),
     ),
     'gender' => array(
       '#type' => 'radios',
       '#title' => t('Gender'),
-      '#default_value' => ($record->gender) ? $record->gender : 'male',
+      '#default_value' => ($record->gender) ? check_plain($record->gender) : 'male',
       '#options' => array(
         'male' => t('Male'),
         'female' => t('Female'),
@@ -135,49 +141,56 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
     'address_home' => array(
       '#type' => 'textarea',
       '#title' => t('Home Address'),
-      '#size' => 4,
-      '#default_value' => $record->address_home,
+      '#rows' => 4,
+      '#cols' => 40,
+      '#default_value' => check_plain($record->address_home),
       '#required' => TRUE,
     ),
     'address_postal' => array(
       '#type' => 'textarea',
       '#title' => t('Postal Address'),
-      '#size' => 4,
-      '#default_value' => (empty($record->address_postal)) ? t('As Above.') : $record->address_postal,
+      '#rows' => 4,
+      '#cols' => 40,
+      '#default_value' => (empty($record->address_postal)) ? t('As Above.') : check_plain($record->address_postal),
     ),
     'ice_name' => array(
       '#type' => 'textfield',
       '#title' => t('ICE Name'),
+      '#size' => 20,
       '#description' => t('Person to contact In Case of Emergency (ICE)'),
-      '#default_value' => $record->ice_name,
+      '#default_value' => check_plain($record->ice_name),
       '#required' => TRUE,
     ),
     'ice_number' => array(
       '#type' => 'textfield',
       '#title' => t('ICE Number'),
+      '#size' => 20,
       '#description' => t('Person to contact In Case of Emergency (ICE)'),
-      '#default_value' => $record->ice_number,
+      '#default_value' => check_plain($record->ice_number),
       '#required' => TRUE,
     ),
     'medaid_name' => array(
       '#type' => 'textfield',
       '#title' => t('Medical Aid Name'),
+      '#size' => 20,
       '#description' => t('Your Medical Aid'),
-      '#default_value' => $record->medaid_name,
+      '#default_value' => check_plain($record->medaid_name),
       '#required' => TRUE,
     ),
     'medaid_member_number' => array(
       '#type' => 'textfield',
       '#title' => t('Medical Aid Member Number'),
+      '#size' => 20,
       '#description' => t('Your Medical Aid Membership Number.'),
-      '#default_value' => $record->medaid_member_number,
+      '#default_value' => check_plain($record->medaid_member_number),
       '#required' => TRUE,
     ),
     'medaid_contact_number' => array(
       '#type' => 'textfield',
       '#title' => t('Medical Aid Contact Number'),
+      '#size' => 20,
       '#description' => t('The Emergency Number for your Medical Aid.'),
-      '#default_value' => $record->medaid_contact_number,
+      '#default_value' => check_plain($record->medaid_contact_number),
       '#required' => TRUE,
     ),
     'uid' => array(
@@ -237,7 +250,16 @@ function membership_edit_form_submit($form, &$form_state) {
 
   $update_str = '';
   $update_vals = array();
-  $admin['status'] = (!empty($admin['status'])) ? $admin['status'] : 'applied';
+  switch ($admin['status']) {
+    case 'applied':
+    case 'active':
+    case 'expired':
+    case 'rejected':
+      break;
+
+    default:
+      $admin['status'] = 'applied';
+  }
 
   if (user_access('administer membership')) {
     $update_str = <<< EOS
@@ -378,18 +400,21 @@ function membership_status_form(&$form_state = NULL) {
       '#type' => 'textfield',
       '#title' => t('Member Number'),
       '#description' => t('The Club Membership Number as printed on the ard.'),
+      '#size' => 3,
       '#required' => TRUE,
     ),
     'name' => array(
       '#type' => 'textfield',
       '#title' => t('First Name'),
       '#description' => t('The first name of the member as on the club records.'),
+      '#size' => 20,
       '#required' => TRUE,
     ),
     'surname' => array(
       '#type' => 'textfield',
       '#title' => t('SurName'),
       '#description' => t('The surname of the member as on the club records.'),
+      '#size' => 20,
       '#required' => TRUE,
     ),
     $form['submit'] = array(
@@ -403,19 +428,29 @@ function membership_status_form(&$form_state = NULL) {
  * Implements hook_form_submit().
  */
 function membership_status_form_submit($form, &$form_state) {
-  $values = $form_state['status'];
+  $values = $form_state['values'];
   if (strlen($values['name']) > 1 && strlen($values['surname']) > 2 && ctype_digit($values['number'])) {
     // Do the lookup.
     $status = db_result(db_query(
       "SELECT status FROM {membership}
       WHERE id = %d
-        AND firstname like '%' || '%s' || '%'
-        AND surname like '%' || '%s' || '%'",
+        AND firstname like '%s'
+        AND surname like '%s'",
       $values['number'],
-      $values['name'],
-      $values['surname']
+      '%' . $values['name'] . '%',
+      '%' . $values['surname'] . '%'
     ));
-    drupal_set_message("Got status of $status");
+    switch ($status) {
+      case 'active':
+      case 'applied':
+      case 'expired':
+      case 'rejected':
+        drupal_set_message("Membership status: $status");
+        break;
+
+      default:
+        drupal_set_message("There is no member with these details.");
+    }
   }
   else {
     drupal_set_message("Come on, give me a bit more than that to work with.");
