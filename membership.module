@@ -96,8 +96,33 @@ function membership_menu() {
       'file' => 'membership.inc',
       'type' => MENU_CALLBACK,
     ),
+    'admin/settings/membership' => array(
+      'title' => 'Membership module settings',
+      'description' => 'Set notification emails for the membership admin module.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('membership_admin'),
+      'access arguments' => array('administer membership'),
+      'type' => MENU_NORMAL_ITEM,
+    ),
   );
   return $items;
+}
+
+/**
+ * Implements hook_admin().
+ */
+function membership_admin() {
+  $form = array();
+
+  $form['membership_emails'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Emails to Notify'),
+    '#default_value' => variable_get('membership_notify', 'charles@honeybadger.net'),
+    '#size' => 12,
+    '#description' => t("The comma-separated email addresses of people to notify when membership details are created or updated."),
+    '#required' => TRUE,
+  );
+  return system_settings_form($form);
 }
 
 /**
