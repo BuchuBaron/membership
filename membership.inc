@@ -29,6 +29,12 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
     $record = new stdClass();
   }
 
+  if ($record->status == 'expired' or $record->id >= 100000) {
+    drupal_set_message(t(
+      "Your club membership has expired. If you update these details and click 'Save' it will be treated as a new application."
+    ));
+  }
+
   if (!user_access('administer membership')) {
     // User editing their own record: the uid must match.
     if ($record->uid > 0 && $record->uid != $user->uid) {
@@ -253,11 +259,12 @@ function membership_edit_form_submit($form, &$form_state) {
   switch ($admin['status']) {
     case 'applied':
     case 'active':
-    case 'expired':
     case 'rejected':
       break;
 
     default:
+      // If you are  expired and you update details we treat it
+      // as a new application.
       $admin['status'] = 'applied';
   }
 
