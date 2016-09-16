@@ -265,6 +265,9 @@ function membership_edit_form_submit($form, &$form_state) {
     default:
       // If you are  expired and you update details we treat it
       // as a new application.
+      if ($values['id'] > 99999) {
+        $values['id'] = membership_set_low_id($values['id']);
+      }
       $admin['status'] = 'applied';
   }
 
@@ -392,6 +395,33 @@ EOS;
       ));
     }
   }
+}
+
+/**
+ * Assign the lowest free id to a record with a given id.
+ *
+ * And set status to 'applied'.
+ */
+function membership_set_low_id($id) {
+  $count = 0;
+  $new_id = 0;
+  do {
+    $count += 1;
+    $new_id = db_result(db_query(
+      "SELECT min(m1.id + 1)
+      FROM {membership} m1
+      LEFT JOIN {membership} m2 ON m1.id + 1 = m2.id
+      WHERE m2.id IS NULL AND m1.id > 50
+      LIMIT 1"
+    ));
+    db_query(
+      "UPDATE membership SET id = %d, status = 'applied'
+      WHERE id = %d",
+      $new_id,
+      $id
+    );
+  } while (db_error() && $count < 10);
+  return $new_id;
 }
 
 /**
