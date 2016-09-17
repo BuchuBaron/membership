@@ -447,12 +447,14 @@ function membership_set_low_id($id) {
  * Send notification emails.
  */
 function membership_notify($type, $member_id) {
+  global $base_url;
+
   $memberQuery = db_query("SELECT * FROM {membership} WHERE id = %d", $member_id);
   $member = db_fetch_object($memberQuery);
   $member->email = 'charles@honeybadger.net'; // XXX CJPO TODO
   $params['@membername'] = $member->firstname . ' ' . $member->surname;
   $params['@MemberDetails'] = $params['@membername'] . ' (' . $member->email . ") with id=$member_id";
-  $params['!ClickHere'] = l(t("Click here to edit/view this member"), "http://bmwmotorradclubcape.co.za/membership/edit/$member_id");
+  $params['!ClickHere'] = l(t("Click here to edit/view this member"), "${base_url}/membership/edit/$member_id");
   drupal_mail('membership', "${type}_member", $member->email, user_preferred_language($account), $params);
   drupal_mail('membership', "${type}_admin", variable_get('membership_notify', 'charles@honeybadger.net, buchubaron@gmail.com'), user_preferred_language($account), $params);
 }
