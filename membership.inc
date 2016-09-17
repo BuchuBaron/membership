@@ -254,6 +254,10 @@ function membership_edit_form_submit($form, &$form_state) {
     db_query("UPDATE {users} SET mail='%s' WHERE  uid=%d", $values['email'], $values['uid']);
   }
 
+  if ($values['id'] > 0 && empty($admin['status'])) {
+    $admin['status'] = db_result(db_query("SELECT status FROM {membership} WHERE id = %d", $values['id']));
+  }
+
   $update_str = '';
   $update_vals = array();
   switch ($admin['status']) {
@@ -351,14 +355,27 @@ EOS;
         $values['medaid_name'], $values['medaid_member_number'], $values['medaid_contact_number']
       );
     } while (db_error() && $count < 10);
+
     if (db_error()) {
+      membership_notify('fail', $new_id);
       drupal_set_message(t(
-        "Failure to create a new member record. Please contact the webmaster."
+        "Failure to create a new member record. If you can printscreen the form and email it to the webmaster we can try to see what went wrong."
+      ));
+    }
+    elseif ($admin['status'] == 'applied') {
+      membership_notify('apply', $new_id);
+      drupal_set_message(t(
+        "Your Member Application with id=@id and uid=@uid successfully created.",
+        array(
+          '@id' => $new_id,
+          '@uid' => $uid,
+        )
       ));
     }
     else {
+      membership_notify('update', $new_id);
       drupal_set_message(t(
-        "Member with id=@id and uid=@uid successfully created.",
+        "Member Details with id=@id and uid=@uid successfully saved.",
         array(
           '@id' => $new_id,
           '@uid' => $uid,
@@ -381,13 +398,15 @@ EOS;
       $update_vals
     );
     if (db_error()) {
+      membership_notify('fail', $values['id']);
       drupal_set_message(t(
-        "Failure to update member record. Please contact the webmaster."
+        "Failure to create a new member record. If you can printscreen the form and email it to the webmaster we can try to see what went wrong."
       ));
     }
     else {
+      membership_notify('update', $values['id']);
       drupal_set_message(t(
-        "Member with id=@id and uid=@uid updated.",
+        "Member Details with id=@id and uid=@uid successfully saved.",
         array(
           '@id' => $values['id'],
           '@uid' => $uid,
@@ -422,6 +441,20 @@ function membership_set_low_id($id) {
     );
   } while (db_error() && $count < 10);
   return $new_id;
+}
+
+/**
+ * Send notification emails.
+ */
+function membership_notify($type, $member_id) {
+  $memberQuery = db_query("SELECT * FROM {membership} WHERE id = %d", $member_id);
+  $member = db_fetch_object($memberQuery);
+  $member->email = 'charles@honeybadger.net'; // XXX CJPO TODO
+  $params['@membername'] = $member->firstname . ' ' . $member->surname;
+  $params['@MemberDetails'] = $params['@membername'] . ' (' . $member->email . ") with id=$member_id";
+  $params['!ClickHere'] = l(t("Click here to edit/view this member"), "http://bmwmotorradclubcape.co.za/membership/edit/$member_id");
+  drupal_mail('membership', "${type}_member", $member->email, user_preferred_language($account), $params);
+  drupal_mail('membership', "${type}_admin", variable_get('membership_notify', 'charles@honeybadger.net, buchubaron@gmail.com'), user_preferred_language($account), $params);
 }
 
 /**

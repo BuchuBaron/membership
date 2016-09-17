@@ -114,15 +114,81 @@ function membership_menu() {
 function membership_admin() {
   $form = array();
 
-  $form['membership_emails'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Emails to Notify'),
+  $form['membership_notify'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Emails to Notify of Membership Changes.'),
     '#default_value' => variable_get('membership_notify', 'charles@honeybadger.net'),
-    '#size' => 12,
     '#description' => t("The comma-separated email addresses of people to notify when membership details are created or updated."),
     '#required' => TRUE,
   );
+
+  $form['apply_member_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Email Body for Application Confirmation.'),
+    '#default_value' => variable_get('apply_member_body', 'The body of the confirmation email when a user applies for membership'),
+    '#description' => t("The contents of the application confirmation email body."),
+    '#required' => TRUE,
+  );
+
+  $form['apply_admin_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Email Body for Application Notification of Administrators.'),
+    '#default_value' => variable_get('apply_admin_body', 'The body of the confirmation email when a user applies for membership'),
+    '#description' => t("The contents of the application confirmation email body."),
+    '#required' => TRUE,
+  );
+  $form['update_member_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Email Body for Update Confirmation.'),
+    '#default_value' => variable_get('update_member_body', 'The body of the confirmation email when a user updates their membership details.'),
+    '#description' => t("The contents of the update confirmation email body."),
+    '#required' => TRUE,
+  );
+  $form['update_admin_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Email Body for Membership Update Notification of Administrators.'),
+    '#default_value' => variable_get('update_admin_body', 'The body of the confirmation email when a user updates their membership record.'),
+    '#description' => t("The contents of the update notification email body."),
+    '#required' => TRUE,
+  );
+
   return system_settings_form($form);
+}
+
+/**
+ * Implements hook_mail().
+ */
+function membership_mail($key, &$message, $params) {
+  $language = $message['language'];
+  $params = array_merge($params, user_mail_tokens($params['account'], $language));
+
+  switch ($key) {
+    case 'apply_member':
+      $message['subject'] = t(variable_get("${key}_subject", 'Membership Application Received from !site'), $params, $language->language);
+      $message['body'][] = t(variable_get("${key}_body", "<p>Dear @membername<br /><br />Your membership application has been received.</p>"), $params, $language->language);
+      break;
+
+    case 'update_member':
+      $message['subject'] = t(variable_get("${key}_subject", 'Membership Record Update from !site'), $params, $language->language);
+      $message['body'][] = t(variable_get("${key}_body", "<p>Dear @membername<br /><br />Your membership record has been updated.</p>"), $params, $language->language);
+      break;
+
+    case 'apply_admin':
+      $message['subject'] = t(variable_get("${key}_subject", 'Membership Application Received from !site'), $variables, $language->language);
+      $message['body'][] = t(variable_get("${key}_body", "<html><body><p>Dear administrator<br /><br />There is a new membership application: @MemberDetails<br />!ClickHere</p></body></html>"), $params, $language->language);
+      break;
+
+    case 'update_admin':
+      $message['subject'] = t(variable_get("${key}_subject", 'Membership Record Update from !site'), $variables, $language->language);
+      $message['body'][] = t(variable_get("${key}_body", "<html><body><p>Dear administrator<br /><br />The following membership record has been updated: @MemberDetails<br />!ClickHere</p></body></html>"), $params, $language->language);
+      break;
+  }
+
+  $message['headers']['MIME-Version'] = '1.0';
+  $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed';
+  $message['headers']['Content-Transfer-Encoding'] = '8Bit';
+  $message['headers']['X-Mailer'] = 'Drupal';
+  $message['headers']['From'] = 'membership@bmwmotorradclubcape.co.za';
 }
 
 /**
