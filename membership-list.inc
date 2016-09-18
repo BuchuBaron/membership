@@ -77,10 +77,10 @@ function membership_list_form(&$form_state = NULL) {
             expired = not paid for this period, rejected = denied or expelled'
           ),
           '#options' => array(
-            'applied' => t('applied'),
-            'active' => t('active'),
-            'expired' => t('expired'),
-            'rejected' => t('rejected'),
+            'applied' => t('Applied'),
+            'active' => t('Active'),
+            'expired' => t('Expired'),
+            'rejected' => t('Rejected'),
           ),
         ),
         'paid' => array(
@@ -370,8 +370,11 @@ function membership_list_form_submit($form, &$form_state) {
         $query_pair_array[] = "$key=" . implode(',', $subarray);
       }
     }
-    elseif (!empty(trim($value))) {
-      $query_pair_array[] = "$key=$value";
+    else {
+      $value = trim($value);
+      if (!empty($value)) {
+        $query_pair_array[] = "$key=$value";
+      }
     }
   }
   $query = implode('&', $query_pair_array);

@@ -13,11 +13,11 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
   // Check for existing membership record.  And confirm this
   // user may edit this record.
   // First try by uid in the membership table.
-  if ($id == 0) {
+  if ($id == 0 && $user->uid > 0) {
     $id = db_result(db_query("SELECT MIN(id) FROM {membership} WHERE uid=%d", $user->uid));
   }
   // Try again, by email address.
-  if ($id == 0) {
+  if ($id == 0 && valid_email_address($user->mail)) {
     $id = db_result(db_query("SELECT MIN(id) FROM {membership} WHERE email = '%s' AND (uid IS NULL OR uid = 0)", $user->mail));
   }
 
@@ -40,6 +40,11 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
     if ($record->uid > 0 && $record->uid != $user->uid) {
       drupal_goto(drupal_access_denied());
     }
+    // If a logged on user with valid email address, who is editing
+    // his own record, make the membership email the same as his email.
+    if (valid_email_address($user->mail)) {
+      $record->email = $user->mail;
+    }
   }
 
   $form = array(
@@ -58,7 +63,7 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
       'member_number' => array(
         '#type' => 'textfield',
         '#title' => t('Member Number'),
-        '#size' => 3,
+        '#SIZE' => 3,
         '#default_value' => $record->id,
       ),
       'status' => array(
@@ -70,10 +75,10 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
         ),
         '#default_value' => $record->status,
         '#options' => array(
-          'applied',
-          'active',
-          'expired',
-          'rejected',
+          'applied' => t('Applied'),
+          'active' => t('Active'),
+          'expired' => t('Expired'),
+          'rejected' => t('Rejected'),
         ),
       ),
       'paid' => array(
@@ -451,11 +456,10 @@ function membership_notify($type, $member_id) {
 
   $memberQuery = db_query("SELECT * FROM {membership} WHERE id = %d", $member_id);
   $member = db_fetch_object($memberQuery);
-  // XXX CJPO TODO.
-  $member->email = 'charles@honeybadger.net';
+  // XXX CJPO TODO. $member->email = 'charles@honeybadger.net';.
   $params['@MemberName'] = $member->firstname . ' ' . $member->surname;
   $params['@MemberDetails'] = $params['@MemberName'] . ' (' . $member->email . ") with id $member_id";
-  $params['!ClickHere'] = l(t("Click here to edit/view this member"), "${base_url}/membership/edit/$member_id");
+  $params['!ClickHere'] = l(t("Click here to edit/view the membership record"), "${base_url}/membership/edit/$member_id");
   drupal_mail('membership', "${type}_member", $member->email, user_preferred_language($account), $params);
   drupal_mail('membership', "${type}_admin", variable_get('membership_notify', 'charles@honeybadger.net, buchubaron@gmail.com'), user_preferred_language($account), $params);
 }

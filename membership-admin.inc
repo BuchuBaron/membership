@@ -62,8 +62,8 @@ function membership_update($action) {
     );
 
     // Run the action against the records.
-    db_query("UPDATE {membership} SET $changeColumn = $newValue
-      WHERE id IN ($cleanlist)");
+    db_query("UPDATE {membership} SET $changeColumn = '%s'
+      WHERE id IN ($cleanlist)", $newValue);
 
     return drupal_json(array(
       'result' => TRUE,
@@ -170,7 +170,7 @@ function membership_download() {
  * Set UID fields in the membership table by matching emails.
  */
 function membership_uids() {
-  $result = db_query("SELECT id, LOWER(email) AS email FROM {membership} WHERE uid IS NULL");
+  $result = db_query("SELECT id, LOWER(email) AS email FROM {membership} WHERE uid IS NULL OR uid=0");
   while ($member = db_fetch_object($result)) {
     $uid = db_result(db_query("SELECT uid FROM {users} WHERE lower(mail) = '%s'", trim($member->email)));
     if ($uid > 0) {
