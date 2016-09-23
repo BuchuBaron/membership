@@ -268,9 +268,10 @@ function membership_list($filter) {
     $filterStr = '';
   }
 
+  $pagelen = variable_get('pagelen', 1500);
   $result = pager_query(
     "SELECT * FROM {membership} $filterStr" . tablesort_sql($header),
-    50
+    $pagelen
   );
 
   $rows = array();
@@ -345,7 +346,7 @@ function membership_list($filter) {
 
   return theme_table(NULL, array($action), array('style' => 'width: 0')) . '<br />' .
     theme_table($header, $rows) .
-    theme_pager(NULL, 50);
+    theme_pager(NULL, $pagelen);
 }
 
 /**
