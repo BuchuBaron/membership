@@ -166,10 +166,40 @@ function membership_list($filter) {
       'class' => 'status',
     ),
     array(
-      'data' => t('Card Collection'),
-      'field' => 'card_collection',
+      'data' => t('UID'),
+      'field' => 'uid',
       'valign' => 'bottom',
       'class' => 'status',
+    ),
+    array(
+      'data' => t('Created'),
+      'field' => 'created',
+      'valign' => 'bottom',
+      'class' => 'sort',
+    ),
+    array(
+      'data' => t('Edited'),
+      'field' => 'edited',
+      'valign' => 'bottom',
+      'class' => 'sort',
+    ),
+    array(
+      'data' => t('Card'),
+      'field' => 'card_collection',
+      'valign' => 'bottom',
+      'class' => 'sort',
+    ),
+    array(
+      'data' => t('Gender'),
+      'field' => 'gender',
+      'valign' => 'bottom',
+      'class' => 'sort',
+    ),
+    array(
+      'data' => t('Bike'),
+      'field' => 'bike',
+      'valign' => 'bottom',
+      'class' => 'sort',
     ),
     array(
       'data' => t('First Name'),
@@ -184,26 +214,14 @@ function membership_list($filter) {
       'class' => 'identity',
     ),
     array(
-      'data' => t('Gender'),
-      'field' => 'gender',
-      'valign' => 'bottom',
-      'class' => 'identity',
-    ),
-    array(
-      'data' => t('Bike'),
-      'field' => 'bike',
+      'data' => t('Email'),
+      'field' => 'email',
       'valign' => 'bottom',
       'class' => 'identity',
     ),
     array(
       'data' => t('Cell'),
       'field' => 'cell',
-      'valign' => 'bottom',
-      'class' => 'contact',
-    ),
-    array(
-      'data' => t('Email'),
-      'field' => 'email',
       'valign' => 'bottom',
       'class' => 'contact',
     ),
@@ -232,8 +250,8 @@ function membership_list($filter) {
       'class' => 'emergency',
     ),
     array(
-      'data' => t('Med Aid Number'),
-      'field' => 'medaid_number',
+      'data' => t('Med Aid Name'),
+      'field' => 'medaid_name',
       'valign' => 'bottom',
       'class' => 'emergency',
     ),
@@ -336,7 +354,7 @@ function membership_list($filter) {
     ),
   );
 
-  foreach (array(t('status'), t('identity'), t('contact'), t('emergency')) as $class) {
+  foreach (array(t('status'), t('sort'), t('identity'), t('contact'), t('emergency')) as $class) {
     $action[] = array(
       'data' => "<input type=\"checkbox\" id=\"$class\" name=\"$class\" value=\"$class\" />" . $class,
       'nowrap' => 'nowrap',

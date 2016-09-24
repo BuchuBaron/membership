@@ -63,8 +63,14 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
       'member_number' => array(
         '#type' => 'textfield',
         '#title' => t('Member Number'),
-        '#SIZE' => 3,
+        '#size' => 3,
         '#default_value' => $record->id,
+      ),
+      'member_uid' => array(
+        '#type' => 'textfield',
+        '#title' => t('Forum UID'),
+        '#size' => 3,
+        '#default_value' => $record->uid,
       ),
       'status' => array(
         '#type' => 'select',

@@ -1,6 +1,6 @@
 Drupal.behaviors.membership_admin = function(context) {
   // Set up click events on the display selector checkboxes.
-  $.each(['status', 'identity', 'contact', 'emergency'], function(index, value) {
+  $.each(['status', 'sort', 'identity', 'contact', 'emergency'], function(index, value) {
     $('#' + value, context).click(function() {
       if ($(this).attr('checked')) {
         $('.' + value).show();
@@ -12,8 +12,9 @@ Drupal.behaviors.membership_admin = function(context) {
   });
 
   $('.emergency').hide();
+  $('.sort').hide();
+  $('.contact').hide();
   $('#status').attr('checked', 'checked');
-  $('#contact').attr('checked', 'checked');
   $('#identity').attr('checked', 'checked');
 
   // Set up select-all
