@@ -104,6 +104,16 @@ function membership_menu() {
       'access arguments' => array('administer membership'),
       'type' => MENU_NORMAL_ITEM,
     ),
+    'admin/ajax/%/%' => array(
+      'description' => 'Get the _SESSION values of the show/hide checkboxes.',
+      'page callback' => 'membership_admin_session',
+      'page arguments' => array(2, 3),
+      // Action = get/set, Session variable = (status, sort, identity, contact,
+      // emergency)
+      'access arguments' => array('administer membership'),
+      'file' => 'membership-admin.inc',
+      'type' => MENU_NORMAL_ITEM,
+    ),
   );
   return $items;
 }
@@ -165,23 +175,23 @@ function membership_mail($key, &$message, $params) {
 
   switch ($key) {
     case 'apply_member':
-      $message['subject'] = t(variable_get("${key}_subject", 'Membership Application Received from !site'), $params, $language->language);
-      $message['body'][] = t(variable_get("${key}_body", "<p>Dear @MemberName<br /><br />Your membership application has been received.</p>"), $params, $language->language);
+      $message['subject'] = variable_get("${key}_subject", t('Membership Application Received from !site', $params, $language->language));
+      $message['body'][] = variable_get("${key}_body", t("<p>Dear @MemberName<br /><br />Your membership application has been received.</p>", $params, $language->language));
       break;
 
     case 'update_member':
-      $message['subject'] = t(variable_get("${key}_subject", 'Membership Record Update from !site'), $params, $language->language);
-      $message['body'][] = t(variable_get("${key}_body", "<p>Dear @MemberName<br /><br />Your membership record has been updated.</p>"), $params, $language->language);
+      $message['subject'] = variable_get("${key}_subject", t('Membership Record Update from !site', $params, $language->language));
+      $message['body'][] = variable_get("${key}_body", t("<p>Dear @MemberName<br /><br />Your membership record has been updated.</p>", $params, $language->language));
       break;
 
     case 'apply_admin':
-      $message['subject'] = t(variable_get("${key}_subject", 'Membership Application Received from !site'), $params, $language->language);
-      $message['body'][] = t(variable_get("${key}_body", "<html><body><p>Dear administrator<br /><br />There is a new membership application: @MemberDetails<br />!ClickHere</p></body></html>"), $params, $language->language);
+      $message['subject'] = variable_get("${key}_subject", t('Membership Application Received from !site', $params, $language->language));
+      $message['body'][] = variable_get("${key}_body", t("<html><body><p>Dear administrator<br /><br />There is a new membership application: @MemberDetails<br />!ClickHere</p></body></html>", $params, $language->language));
       break;
 
     case 'update_admin':
-      $message['subject'] = t(variable_get("${key}_subject", 'Membership Record Update from !site'), $params, $language->language);
-      $message['body'][] = t(variable_get("${key}_body", "<html><body><p>Dear administrator<br /><br />The following membership record has been updated: @MemberDetails<br />!ClickHere</p></body></html>"), $params, $language->language);
+      $message['subject'] = variable_get("${key}_subject", t('Membership Record Update from !site', $params, $language->language));
+      $message['body'][] = variable_get("${key}_body", t("<html><body><p>Dear administrator<br /><br />The following membership record has been updated: @MemberDetails<br />!ClickHere</p></body></html>", $params, $language->language));
       break;
   }
 

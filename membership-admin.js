@@ -4,9 +4,11 @@ Drupal.behaviors.membership_admin = function(context) {
     $('#' + value, context).click(function() {
       if ($(this).attr('checked')) {
         $('.' + value).show();
+        setSessionVariable(value, 1);
       }
       else {
         $('.' + value).hide();
+        setSessionVariable(value, 0);
       }
     });
   });
@@ -47,7 +49,6 @@ Drupal.behaviors.membership_admin = function(context) {
       return element.value;
     });
     var post_data = {
-      // filter: filter,
       selected_members: selected_members.join(',')
     };
 
@@ -119,4 +120,24 @@ function checkActionDropdownState() {
   else {
     $('#run-action').attr('disabled', true).attr('title', Drupal.t('Choose an action to run first.'));
   }
+}
+
+function setSessionVariable(name, value) {
+  var post_data = {
+    name: value
+  };
+
+  //$.post('/membership/update/' + command, post_data, function(result) {
+  $.ajax({
+    type: 'POST',
+    data: name + '=' + value,
+    url: Drupal.settings.basePath + 'admin/ajax/set/' + name,
+    dataType: 'json',
+    success: function(result) {
+      alert("Got result");
+    },
+  });
+}
+
+function getSessionVariable(name) {
 }

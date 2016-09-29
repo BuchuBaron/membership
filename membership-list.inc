@@ -314,6 +314,22 @@ function membership_list($filter) {
         // Already done.
         continue;
       }
+      if ($column['field'] == 'uid') {
+        $row[] = array(
+          'data' => l(
+            $record->uid,
+            '/user/' . check_plain($record->uid) . '/edit',
+            array(
+              'query' => drupal_get_destination(),
+            )
+          ),
+          'nowrap' => 'nowrap',
+          'style' => 'white-space: nowrap',
+          'class' => $column['class'],
+          'id' => $column['field'] . '-' . check_plain($record->id),
+        );
+        continue;
+      }
       $row[] = array(
         'data' => check_plain($record->$column['field']),
         'class' => $column['class'],
@@ -354,7 +370,13 @@ function membership_list($filter) {
     ),
   );
 
-  foreach (array(t('status'), t('sort'), t('identity'), t('contact'), t('emergency')) as $class) {
+  foreach (array(
+    t('status'),
+    t('sort'),
+    t('identity'),
+    t('contact'),
+    t('emergency'),
+  ) as $class) {
     $action[] = array(
       'data' => "<input type=\"checkbox\" id=\"$class\" name=\"$class\" value=\"$class\" />" . $class,
       'nowrap' => 'nowrap',
@@ -401,6 +423,29 @@ function membership_list_form_submit($form, &$form_state) {
   $form_state['redirect'] = array(
     'membership/list',
     $query,
+  );
+}
+
+/**
+ * Set/get Session variables about the state of the membership list.
+ */
+function membership_list_session($action, $var) {
+  if (!in_array($action, array('get', 'set')) or
+    !in_array($var, array('status', 'sort', 'identity', 'contact', 'emergency'))) {
+    drupal_goto('access denied');
+  }
+  $value = check_plain($_POST['value']);
+  if ($action === 'set') {
+    $_SESSION[$var] = $value;
+  }
+  else {
+    $value = $_SESSION[$var];
+  }
+  drupal_json(
+    array(
+      'status' => TRUE,
+      'data' => $value,
+    )
   );
 }
 
