@@ -80,6 +80,16 @@ function membership_menu() {
       'file' => 'membership-admin.inc',
       'type' => MENU_CALLBACK,
     ),
+    'membership/restore/%/%' => array(
+      'title' => 'Bulk Restore.',
+      'description' => 'Bulk Reverse an entry from the audit log.',
+      'page callback' => 'membership_restore',
+      'page arguments' => array(2, 3),
+      // UID, Date-time.
+      'access arguments' => array('administer membership'),
+      'file' => 'membership-admin.inc',
+      'type' => MENU_CALLBACK,
+    ),
     'membership/setuids' => array(
       'title' => 'Populate UIDs from users table.',
       'page callback' => 'membership_uids',

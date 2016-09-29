@@ -179,4 +179,23 @@ function membership_uids() {
   }
 }
 
+/**
+ * Restore a bulk update to a previous state.
+ *
+ * You will have to find the right record in membership_auditlog to get the date
+ * and time, and the userId.  This is manual for now.
+ */
+function membership_restore($uid, $datetime) {
+  $result = db_query("SELECT * FROM {membership_auditlog} WHERE uid=%d AND timestamp='%s'", $uid, $datetime);
+  $record = db_fetch_object($result);
+  $oldvalues = json_decode($record->oldvalues);
+
+  foreach ($oldvalues as $id => $value) {
+    db_query("UPDATE {membership} SET " . $record->attribute . "='%s' WHERE id=%d",
+      $value, $id
+    );
+  }
+  drupal_goto('/membership/list');
+}
+
 // vim: set et ft=php sw=2 ai:
