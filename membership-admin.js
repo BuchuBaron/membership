@@ -16,10 +16,9 @@ Drupal.behaviors.membership_admin = function(context) {
   });
 
   // Initialize the display checkboxes.
-  var doDefault = true;
   $.each(['status', 'sort', 'identity', 'contact', 'emergency'], function(index, name) {
-    doDefault = false;
     getSessionVariable(name, function(val) {
+      // The function was successful -> a Session value had been set before.
       if (val == 1) {
         $('.' + name).show();
         $('#' + name).attr('checked', 'checked');
@@ -30,15 +29,6 @@ Drupal.behaviors.membership_admin = function(context) {
       }
     });
   });
-
-  // Set up defaults if nothing actioned yet.
-  if (doDefault) {
-    $('.emergency').hide();
-    $('.sort').hide();
-    $('.contact').hide();
-    $('#status').click();
-    $('#identity').click();
-  }
 
   // Set up select-all
   $('#select-all', context).click(function() {
@@ -165,9 +155,6 @@ function getSessionVariable(name, callback) {
     success: function(result) {
       if (result.status) {
         callback(result.data)
-      }
-      else {
-        alert("FAILURE: Got result=" + result);
       }
     },
   });

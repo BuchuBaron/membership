@@ -208,10 +208,20 @@ function membership_admin_session($action, $variable) {
     $data = $_SESSION[$variable];
   }
   elseif ($action == 'get') {
-    $data = $_SESSION[$variable];
-    $status = TRUE;
+    if (isset($_SESSION[$variable])) {
+      $data = $_SESSION[$variable];
+      $status = TRUE;
+    }
+    elseif ($variable == 'status' or $variable == 'identity') {
+      // Set defaults if not yet set/changed.
+      $data = $_SESSION[$variable] = 1;
+      $status = TRUE;
+    }
+    else {
+      $data = NULL;
+      $status = FALSE;
+    }
   }
-
   drupal_json(array(
     'status' => $status,
     'data' => $data,
