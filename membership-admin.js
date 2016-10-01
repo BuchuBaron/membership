@@ -1,23 +1,44 @@
 Drupal.behaviors.membership_admin = function(context) {
   // Set up click events on the display selector checkboxes.
-  $.each(['status', 'sort', 'identity', 'contact', 'emergency'], function(index, value) {
-    $('#' + value, context).click(function() {
+  $.each(['status', 'sort', 'identity', 'contact', 'emergency'], function(index, name) {
+    $('#' + name, context).click(function() {
       if ($(this).attr('checked')) {
-        $('.' + value).show();
-        setSessionVariable(value, 1);
+        setSessionVariable(name, 1, function() {
+          $('.' + name).show();
+        });
       }
       else {
-        $('.' + value).hide();
-        setSessionVariable(value, 0);
+        setSessionVariable(name, 0, function() {
+          $('.' + name).hide();
+        });
       }
     });
   });
 
-  $('.emergency').hide();
-  $('.sort').hide();
-  $('.contact').hide();
-  $('#status').attr('checked', 'checked');
-  $('#identity').attr('checked', 'checked');
+  // Initialize the display checkboxes.
+  var doDefault = true;
+  $.each(['status', 'sort', 'identity', 'contact', 'emergency'], function(index, name) {
+    doDefault = false;
+    getSessionVariable(name, function(val) {
+      if (val == 1) {
+        $('.' + name).show();
+        $('#' + name).attr('checked', 'checked');
+      }
+      else {
+        $('.' + name).hide();
+        $('#' + name).removeAttr('checked');
+      }
+    });
+  });
+
+  // Set up defaults if nothing actioned yet.
+  if (doDefault) {
+    $('.emergency').hide();
+    $('.sort').hide();
+    $('.contact').hide();
+    $('#status').click();
+    $('#identity').click();
+  }
 
   // Set up select-all
   $('#select-all', context).click(function() {
@@ -122,22 +143,32 @@ function checkActionDropdownState() {
   }
 }
 
-function setSessionVariable(name, value) {
+function setSessionVariable(name, value, callback) {
   var post_data = {
     name: value
   };
 
-  //$.post('/membership/update/' + command, post_data, function(result) {
   $.ajax({
     type: 'POST',
     data: name + '=' + value,
     url: Drupal.settings.basePath + 'admin/ajax/set/' + name,
     dataType: 'json',
-    success: function(result) {
-      alert("Got result");
-    },
+    success: callback,
   });
 }
 
-function getSessionVariable(name) {
+function getSessionVariable(name, callback) {
+  $.ajax({
+    type: 'POST',
+    url: Drupal.settings.basePath + 'admin/ajax/get/' + name,
+    dataType: 'json',
+    success: function(result) {
+      if (result.status) {
+        callback(result.data)
+      }
+      else {
+        alert("FAILURE: Got result=" + result);
+      }
+    },
+  });
 }

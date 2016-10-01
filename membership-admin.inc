@@ -134,7 +134,7 @@ function membership_export($memberlist) {
   }
 
   return drupal_json(array(
-    'result' => TRUE,
+    'status' => TRUE,
     'data' => array(
       'path' => $file,
     ),
@@ -196,6 +196,26 @@ function membership_restore($uid, $datetime) {
     );
   }
   drupal_goto('/membership/list');
+}
+
+/**
+ * Get and set _SESSION variables related to the admin screen display.
+ */
+function membership_admin_session($action, $variable) {
+  if ($action == 'set') {
+    $_SESSION[$variable] = $_POST[$variable];
+    $status = TRUE;
+    $data = $_SESSION[$variable];
+  }
+  elseif ($action == 'get') {
+    $data = $_SESSION[$variable];
+    $status = TRUE;
+  }
+
+  drupal_json(array(
+    'status' => $status,
+    'data' => $data,
+  ));
 }
 
 // vim: set et ft=php sw=2 ai:
