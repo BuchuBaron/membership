@@ -65,7 +65,7 @@ Drupal.behaviors.membership_admin = function(context) {
 
     $.post('/membership/update/' + command, post_data, function(result) {
       eval("output=" + result);
-      if (output.result) {
+      if (output.status) {
         // Update the changed records in situ, or refresh the page.
         $(output.data).each(function(idx, val) {
           if (command == 'paid') {
@@ -98,7 +98,7 @@ Drupal.behaviors.membership_admin = function(context) {
         });
       }
       else {
-        alert("Failed " + command + " to get " + output.result + " with " + output.data.selected_members);
+        alert("Failed " + command + " to get " + output.status + " with " + output.data.selected_members);
       }
     });
   });
