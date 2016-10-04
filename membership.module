@@ -210,7 +210,6 @@ function membership_mail($key, &$message, $params) {
   $message['headers']['Content-Transfer-Encoding'] = '8Bit';
   $message['headers']['X-Mailer'] = 'Drupal';
   $message['headers']['From'] = 'membership@bmwmotorradclubcape.co.za';
-  rs_debug("213: In membership_mail($key, message=", $message, "params=", $params);
 }
 
 /**
