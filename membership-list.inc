@@ -174,6 +174,7 @@ function membership_list($filter) {
     array(
       'data' => t('Created'),
       'field' => 'created',
+      'sort' => 'desc',
       'valign' => 'bottom',
       'class' => 'sort',
     ),
