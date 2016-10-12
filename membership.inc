@@ -462,7 +462,7 @@ function membership_notify($type, $member_id) {
 
   $memberQuery = db_query("SELECT * FROM {membership} WHERE id = %d", $member_id);
   $member = db_fetch_object($memberQuery);
-  // XXX CJPO TODO. $member->email = 'charles@honeybadger.net'; // XXX CJPO TODO. . 
+  // XXX CJPO TODO. $member->email = 'charles@honeybadger.net'; // XXX TODO.
   $params['@MemberName'] = $member->firstname . ' ' . $member->surname;
   $params['@MemberDetails'] = $params['@MemberName'] . ' (' . $member->email . ") with id $member_id";
   $params['!ClickHere'] = l(t("Click here to edit/view the membership record"), "${base_url}/membership/edit/$member_id");
