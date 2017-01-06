@@ -482,7 +482,7 @@ function membership_status_form(&$form_state = NULL) {
     'number' => array(
       '#type' => 'textfield',
       '#title' => t('Member Number'),
-      '#description' => t('The Club Membership Number as printed on the ard.'),
+      '#description' => t('The Club Membership Number as printed on the card.'),
       '#size' => 3,
       '#required' => TRUE,
     ),
