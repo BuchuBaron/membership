@@ -66,7 +66,7 @@ function membership_update($action) {
       WHERE id IN ($cleanlist)", $newValue);
 
     return drupal_json(array(
-      'result' => TRUE,
+      'status' => TRUE,
       'data' => $cleanmemberarray,
     ));
   }
@@ -77,7 +77,7 @@ function membership_update($action) {
     }
   }
   return drupal_json(array(
-    'result' => FALSE,
+    'status' => FALSE,
     'data' => array(
       'success' => 0,
     ),

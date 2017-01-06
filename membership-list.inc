@@ -174,6 +174,7 @@ function membership_list($filter) {
     array(
       'data' => t('Created'),
       'field' => 'created',
+      'sort' => 'desc',
       'valign' => 'bottom',
       'class' => 'sort',
     ),
@@ -293,7 +294,9 @@ function membership_list($filter) {
   );
 
   $rows = array();
+  $rowcount = 0;
   while ($record = db_fetch_object($result)) {
+    $rowcount++;
     $row = array(
       array(
         'data' => '<input type="checkbox" class="selection" value="' .
@@ -384,7 +387,26 @@ function membership_list($filter) {
     );
   }
 
-  return theme_table(NULL, array($action), array('style' => 'width: 0')) . '<br />' .
+  $status = array(
+    array(
+      'data' => t('Total Rows:'),
+      'header' => TRUE,
+    ),
+    array(
+      'data' => $rowcount,
+      'id' => 'row-count',
+    ),
+    array(
+      'data' => t('Selected:'),
+      'header' => TRUE,
+    ),
+    array(
+      'data' => 0,
+      'id' => 'selected-count',
+    ),
+  );
+
+  return theme_table(NULL, array($action, $status), array('style' => 'width: 0')) . '<br />' .
     theme_table($header, $rows) .
     theme_pager(NULL, $pagelen);
 }
