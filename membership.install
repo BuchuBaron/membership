@@ -49,6 +49,11 @@ function membership_schema() {
         'mysql_type' => 'timestamp default now() on update now()',
         'not null' => TRUE,
       ),
+      'editor' => array(
+        'description' => 'User who last updated this record.',
+        'type' => 'int',
+        'default' => NULL,
+      ),
       'uid' => array(
         'description' => 'Drupal user id.',
         'type' => 'int',

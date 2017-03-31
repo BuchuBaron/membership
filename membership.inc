@@ -402,8 +402,10 @@ EOS;
     }
   }
   else {
+    $editor = $user->uid;
     db_query("UPDATE membership SET
       edited = now(),
+      editor = '$editor',
       $update_str
       WHERE id = %d",
       $update_vals
