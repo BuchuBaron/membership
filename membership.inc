@@ -151,8 +151,6 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
       '#options' => array(
         'post' => t('Post to my postal address.'),
         'collect_meeting' => t('Collect at club meeting.'),
-        'collect_stellenbosch' => t('Collect from Donford Stellenbosch'),
-        'collect_cape_town' => t('Collect from Donford Cape Town'),
       ),
     ),
     'address_home' => array(
