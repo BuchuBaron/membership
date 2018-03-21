@@ -62,7 +62,7 @@ function membership_list_form(&$form_state = NULL) {
         '#title' => t("Membership List Filter"),
         '#theme' => 'theme_membership_list_form',
         '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
+        '#collapsed' => FALSE,
 
         'member_number' => array(
           '#type' => 'textfield',
@@ -352,7 +352,7 @@ function membership_list($filter) {
     array(
       'data' => '<select id="action" /><option value="action">' . t('Action') . '</option>' .
       '<option value="export">' . t('export') . '</option>' .
-      '<option value="paid">' . t('paid') . '</option>' . '<option value="unpaid">' . t('unpaid') . '</option>' .
+      '<option value="paid">' . t('set to paid') . '</option>' . '<option value="unpaid">' . t('set to unpaid') . '</option>' .
       '<option value="active">' . t('activate') . '</option>' .
       '<option value="rejected">' . t('reject') . '</option>' .
       '<option value="expired">' . t('expire') . '</option></select>',
@@ -362,7 +362,7 @@ function membership_list($filter) {
       'style' => 'white-space: nowrap;width: 0',
     ),
     array(
-      'data' => '<input type="button" id="run-action" value="' . t('Run') . '" />',
+      'data' => '<input type="button" id="run-action" value="' . t('Apply Action') . '" />',
       'align' => 'left',
       'style' => 'white-space: nowrap;width: 0',
     ),
@@ -381,7 +381,7 @@ function membership_list($filter) {
     t('emergency'),
   ) as $class) {
     $action[] = array(
-      'data' => "<input type=\"checkbox\" id=\"$class\" name=\"$class\" value=\"$class\" />" . $class,
+      'data' => "<input type=\"checkbox\" id=\"$class\" name=\"$class\" value=\"\" />" . $class,
       'nowrap' => 'nowrap',
       'style' => 'white-space: nowrap;width: 0',
     );
