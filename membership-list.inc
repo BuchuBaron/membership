@@ -343,6 +343,13 @@ function membership_list($filter) {
   }
 
   // The first row will be the "select all" and action on selection row.
+  if (user_access('set paid/unpaid status')) {
+    $paidSettings = '<option value="paid">' . t('set to paid') . '</option>' . '<option value="unpaid">' . t('set to unpaid') . '</option>';
+  }
+  else {
+    $paidSettings = '';
+  }
+
   $action = array(
     array(
       'data' => '<input type="checkbox" id="select-all" value="all" />' . t("<b>Select All</b>"),
@@ -352,7 +359,7 @@ function membership_list($filter) {
     array(
       'data' => '<select id="action" /><option value="action">' . t('Action') . '</option>' .
       '<option value="export">' . t('export') . '</option>' .
-      '<option value="paid">' . t('set to paid') . '</option>' . '<option value="unpaid">' . t('set to unpaid') . '</option>' .
+      $paidSettings .
       '<option value="active">' . t('activate') . '</option>' .
       '<option value="rejected">' . t('reject') . '</option>' .
       '<option value="expired">' . t('expire') . '</option></select>',

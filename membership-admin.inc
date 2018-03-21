@@ -25,11 +25,11 @@ function membership_update($action) {
   $cleanlist = implode(',', $cleanmemberarray);
 
   $changeColumn = FALSE;
-  if ($action == 'paid') {
+  if ($action == 'paid' and user_access('set paid/unpaid status')) {
     $changeColumn = 'paid';
     $newValue = 1;
   }
-  elseif ($action == 'unpaid') {
+  elseif ($action == 'unpaid' and user_access('set paid/unpaid status')) {
     $changeColumn = 'paid';
     $newValue = 0;
   }
