@@ -143,6 +143,10 @@ function membership_list_form(&$form_state = NULL) {
           '#type' => 'submit',
           '#value' => t('Filter'),
         ),
+        'reset' => array(
+          '#type' => 'submit',
+          '#value' => t('Reset'),
+        ),
         'display' => array(
           '#type' => 'markup',
           '#value' => t("<br /><br /><h3>Select what types of column to display</h3>!TableOfMembers",
@@ -403,7 +407,13 @@ function membership_list_form_submit($form, &$form_state) {
       }
     }
   }
-  $query = implode('&', $query_pair_array);
+  if ($form_state['values']['op'] == 'Filter') {
+    $query = implode('&', $query_pair_array);
+  }
+  else {
+    // Reset the filter.
+    $query = NULL;
+  }
 
   $form_state['redirect'] = array(
     'membership/list',
