@@ -13,6 +13,7 @@ function membership_list_form(&$form_state = NULL) {
   $custom_theme = 'garland';
 
   $filter = array();
+  $defaults = array();
   foreach (array(
     'member_number',
     'status',
@@ -25,6 +26,7 @@ function membership_list_form(&$form_state = NULL) {
     'bike',
   ) as $key) {
     if (!empty($_GET[$key])) {
+      $defaults[$key] = $_GET[$key];
       if (in_array($key, array('status', 'gender', 'card_collection'))) {
         // These are multi-value arrays that are comma-separated. Reconstitute
         // them.
@@ -54,6 +56,10 @@ function membership_list_form(&$form_state = NULL) {
   }
 
   if (user_access('administer membership')) {
+    $displayTable = membership_make_display_table();
+    // Rowcount carries the rowcount into the bulk actions status line.
+    $membersTable = membership_list($filter, $rowcount);
+
     return array(
       '#tree' => TRUE,
 
@@ -67,7 +73,7 @@ function membership_list_form(&$form_state = NULL) {
         'member_number' => array(
           '#type' => 'textfield',
           '#title' => t('Member Number'),
-          '#default_value' => $record->id,
+          '#default_value' => $defaults['member_number'],
         ),
         'status' => array(
           '#type' => 'checkboxes',
@@ -76,6 +82,7 @@ function membership_list_form(&$form_state = NULL) {
             'applied = not yet approved, active = approved and paid up,
             expired = not paid for this period, rejected = denied or expelled'
           ),
+          '#default_value' => explode(',', $defaults['status']),
           '#options' => array(
             'applied' => t('Applied'),
             'active' => t('Active'),
@@ -86,6 +93,7 @@ function membership_list_form(&$form_state = NULL) {
         'paid' => array(
           '#type' => 'checkboxes',
           '#title' => t('Paid'),
+          '#default_value' => explode(',', $defaults['paid']),
           '#options' => array(
             'paid' => t('Paid'),
             'unpaid' => t('Unpaid'),
@@ -94,14 +102,17 @@ function membership_list_form(&$form_state = NULL) {
         'firstname' => array(
           '#type' => 'textfield',
           '#title' => t('First Name'),
+          '#default_value' => $defaults['firstname'],
         ),
         'surname' => array(
           '#type' => 'textfield',
           '#title' => t('Surname'),
+          '#default_value' => $defaults['surname'],
         ),
         'gender' => array(
           '#type' => 'checkboxes',
           '#title' => t('Gender'),
+          '#default_value' => explode(',', $defaults['gender']),
           '#options' => array(
             'male' => t('Male'),
             'female' => t('Female'),
@@ -110,10 +121,12 @@ function membership_list_form(&$form_state = NULL) {
         'email' => array(
           '#type' => 'textfield',
           '#title' => t('Email'),
+          '#default_value' => $defaults['email'],
         ),
         'card_collection' => array(
           '#type' => 'checkboxes',
           '#title' => t('Card Collection'),
+          '#default_value' => explode(',', $defaults['card_collection']),
           '#options' => array(
             'post' => t('Postal address.'),
             'collect_meeting' => t('Club meeting.'),
@@ -124,15 +137,31 @@ function membership_list_form(&$form_state = NULL) {
         'bike' => array(
           '#type' => 'textfield',
           '#title' => t('Bike'),
+          '#default_value' => $defaults['bike'],
         ),
         'submit' => array(
           '#type' => 'submit',
           '#value' => t('Filter'),
         ),
+        'display' => array(
+          '#type' => 'markup',
+          '#value' => t("<br /><br /><h3>Select what types of column to display</h3>!TableOfMembers",
+            array('!TableOfMembers' => $displayTable)),
+        ),
+      ),
+      'Actions' => array(
+        '#type' => 'fieldset',
+        '#title' => 'Bulk Actions on Selected Records',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        'Bulk Actions Table' => array(
+          '#type' => 'markup',
+          '#value' => membership_make_bulk_actions_table($rowcount),
+        ),
       ),
       'table' => array(
         '#type' => 'markup',
-        '#value' => membership_list($filter),
+        '#value' => $membersTable,
       ),
       'iframe' => array(
         '#type' => 'markup',
@@ -145,7 +174,7 @@ function membership_list_form(&$form_state = NULL) {
 /**
  * Produce an HTML sortable table of all the members.
  */
-function membership_list($filter) {
+function membership_list($filter, &$rowcount) {
   drupal_add_js(drupal_get_path('module', 'membership') . '/membership-admin.js');
   $header = array(
     array(
@@ -342,80 +371,7 @@ function membership_list($filter) {
     $rows[] = $row;
   }
 
-  // The first row will be the "select all" and action on selection row.
-  if (user_access('set paid/unpaid status')) {
-    $paidSettings = '<option value="paid">' . t('set to paid') . '</option>' . '<option value="unpaid">' . t('set to unpaid') . '</option>';
-  }
-  else {
-    $paidSettings = '';
-  }
-
-  $action = array(
-    array(
-      'data' => '<input type="checkbox" id="select-all" value="all" />' . t("<b>Select All</b>"),
-      'nowrap' => 'nowrap',
-      'style' => 'white-space: nowrap;width: 0',
-    ),
-    array(
-      'data' => '<select id="action" /><option value="action">' . t('Action') . '</option>' .
-      '<option value="export">' . t('export') . '</option>' .
-      $paidSettings .
-      '<option value="active">' . t('activate') . '</option>' .
-      '<option value="rejected">' . t('reject') . '</option>' .
-      '<option value="expired">' . t('expire') . '</option></select>',
-      'nowrap' => 'nowrap',
-      'style' => 'white-space: nowrap',
-      'align' => 'left',
-      'style' => 'white-space: nowrap;width: 0',
-    ),
-    array(
-      'data' => '<input type="button" id="run-action" value="' . t('Apply Action') . '" />',
-      'align' => 'left',
-      'style' => 'white-space: nowrap;width: 0',
-    ),
-    array(
-      'data' => t("<b>Show:</b>"),
-      'align' => 'right',
-      'style' => 'padding-left: 3em',
-    ),
-  );
-
-  foreach (array(
-    t('status'),
-    t('sort'),
-    t('identity'),
-    t('contact'),
-    t('emergency'),
-  ) as $class) {
-    $action[] = array(
-      'data' => "<input type=\"checkbox\" id=\"$class\" name=\"$class\" value=\"\" />" . $class,
-      'nowrap' => 'nowrap',
-      'style' => 'white-space: nowrap;width: 0',
-    );
-  }
-
-  $status = array(
-    array(
-      'data' => t('Total Rows:'),
-      'header' => TRUE,
-    ),
-    array(
-      'data' => $rowcount,
-      'id' => 'row-count',
-    ),
-    array(
-      'data' => t('Selected:'),
-      'header' => TRUE,
-    ),
-    array(
-      'data' => 0,
-      'id' => 'selected-count',
-    ),
-  );
-
-  return theme_table(NULL, array($action, $status), array('style' => 'width: 0')) . '<br />' .
-    theme_table($header, $rows) .
-    theme_pager(NULL, $pagelen);
+  return theme_table($header, $rows) . theme_pager(NULL, $pagelen);
 }
 
 /**
@@ -453,6 +409,89 @@ function membership_list_form_submit($form, &$form_state) {
     'membership/list',
     $query,
   );
+}
+
+/**
+ * Make a table of checkboxes to control which columns get displayed.
+ */
+function membership_make_display_table() {
+  $columns = array();
+  foreach (array(
+    t('status'),
+    t('sort'),
+    t('identity'),
+    t('contact'),
+    t('emergency'),
+  ) as $class) {
+    $columns[] = array(
+      'data' => "<input type=\"checkbox\" id=\"$class\" name=\"$class\" value=\"\" />" . $class,
+      'nowrap' => 'nowrap',
+      'style' => 'white-space: nowrap;width: 0',
+    );
+  }
+  $rows = array(
+    $columns,
+  );
+  $table = theme_table(NULL, $rows);
+  return($table);
+}
+
+/**
+ * Create a closed fieldset with the bulk action dialogue.
+ */
+function membership_make_bulk_actions_table($rowcount) {
+  // The first row will be the "select all" and action on selection row.
+  if (user_access('set paid/unpaid status')) {
+    $paidSettings = '<option value="paid">' . t('set to paid') . '</option>' . '<option value="unpaid">' . t('set to unpaid') . '</option>';
+  }
+  else {
+    $paidSettings = '';
+  }
+
+  $action = array(
+    array(
+      'data' => '<input type="checkbox" id="select-all" value="all" />' . t("<b>Select All</b>"),
+      'nowrap' => 'nowrap',
+      'style' => 'white-space: nowrap;width: 0',
+    ),
+    array(
+      'data' => '<select id="action" /><option value="action">' . t('Action') . '</option>' .
+      '<option value="export">' . t('export') . '</option>' .
+      $paidSettings .
+      '<option value="active">' . t('activate') . '</option>' .
+      '<option value="rejected">' . t('reject') . '</option>' .
+      '<option value="expired">' . t('expire') . '</option></select>',
+      'nowrap' => 'nowrap',
+      'style' => 'white-space: nowrap',
+      'align' => 'left',
+      'style' => 'white-space: nowrap;width: 0',
+    ),
+    array(
+      'data' => '<input type="button" id="run-action" value="' . t('Apply Action') . '" />',
+      'align' => 'left',
+      'style' => 'white-space: nowrap;width: 0',
+    ),
+  );
+
+  $status = array(
+    array(
+      'data' => t('Total Rows:'),
+      'header' => TRUE,
+    ),
+    array(
+      'data' => $rowcount,
+      'id' => 'row-count',
+    ),
+    array(
+      'data' => t('Selected:'),
+      'header' => TRUE,
+    ),
+    array(
+      'data' => 0,
+      'id' => 'selected-count',
+    ),
+  );
+  return theme_table(NULL, array($action, $status), array('style' => 'width: 0'));
 }
 
 /**

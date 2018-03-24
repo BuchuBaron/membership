@@ -16,19 +16,32 @@ Drupal.behaviors.membership_admin = function(context) {
   });
 
   // Initialize the display checkboxes.
+  var foundSelection = false;
   $.each(['status', 'sort', 'identity', 'contact', 'emergency'], function(index, name) {
     getSessionVariable(name, function(val) {
       // The function was successful -> a Session value had been set before.
-      if (val == 1) {
-        $('.' + name).show();
+      if (val == "1") {
+        foundSelection = true;
         $('#' + name).attr('checked', 'checked');
+        setSessionVariable(name, 1, function() {
+          $('.' + name).show();
+        });
       }
       else {
-        $('.' + name).hide();
         $('#' + name).removeAttr('checked');
+        setSessionVariable(name, 0, function() {
+          $('.' + name).hide();
+        });
       }
     });
   });
+  if (!foundSelection) {
+    // Select the sort checkbox as a suitable default.
+    $('#sort').attr('checked', 'checked');
+    setSessionVariable('sort', 1, function() {
+      $('.sort').show();
+    });
+  }
 
   // Set up select-all
   $('#select-all', context).click(function() {
@@ -123,8 +136,8 @@ function checkActionDropdownState() {
     if ($(this).attr('checked')) {
       $('#action').attr('disabled', false);
       selectionCount += 1;
-      $('#selected-count').html(selectionCount);
     }
+    $('#selected-count').html(selectionCount);
   });
 
   $('#action:enabled').attr('title', Drupal.t('Choose your action then click the Run button.'));

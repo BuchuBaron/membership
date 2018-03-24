@@ -2,4 +2,4 @@ name = BMW MC Cape Membership Admin
 description = "Manage BMW Motorrad Club Cape Membership from start to finish."
 core = 6.x
 package = "HoneyBadger"
-version = "6.x-0.1"
+version = "6.x-1.0"
