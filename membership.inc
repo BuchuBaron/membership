@@ -274,6 +274,7 @@ function membership_edit_form_submit($form, &$form_state) {
   switch ($admin['status']) {
     case 'applied':
     case 'active':
+    case 'life':
     case 'rejected':
       break;
 
@@ -528,6 +529,7 @@ function membership_status_form_submit($form, &$form_state) {
     switch ($status) {
       case 'active':
       case 'applied':
+      case 'life':
       case 'expired':
       case 'rejected':
         drupal_set_message("Membership status: $status");
