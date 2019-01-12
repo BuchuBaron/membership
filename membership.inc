@@ -77,12 +77,14 @@ function membership_edit_form(&$form_state = NULL, $id = 0) {
         '#title' => t('Status'),
         '#description' => t(
           'applied = not yet approved, active = approved and paid up,
-          expired = not paid for this period, rejected = denied or expelled'
+          expired = not paid for this period, rejected = denied or expelled,
+          life = Honorary Life Member.'
         ),
         '#default_value' => $record->status,
         '#options' => array(
           'applied' => t('Applied'),
           'active' => t('Active'),
+          'life' => t('Life'),
           'expired' => t('Expired'),
           'rejected' => t('Rejected'),
         ),
